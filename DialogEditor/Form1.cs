@@ -16,10 +16,10 @@ namespace DialogSystem
 {
     public partial class Form1 : Form
     {
-        TreeNode selected;
-        TreeNode _last_slc;
-        public static JToken JsonSource = JToken.Parse(System.IO.File.ReadAllText("对话.json"));
-        TreeNode currentNode;
+        RichNode selected;
+        RichNode _last_slc;
+        public static JToken JsonSource = JToken.Parse(File.ReadAllText("对话.json"));
+        RichNode currentNode;
         public Form1()
         {
             InitializeComponent();
@@ -32,20 +32,15 @@ namespace DialogSystem
             AddNodesToTreeView(view, (JObject)JsonSource);
         }
 
-        private void treeView1_AfterSelect_1(object sender, TreeViewEventArgs e)
+        private RichNode FindNodeByText(TreeNodeCollection nodes, string searchText)
         {
-
-        }
-
-        private TreeNode FindNodeByText(TreeNodeCollection nodes, string searchText)
-        {
-            foreach (TreeNode node in nodes)
+            foreach (RichNode node in nodes)
             {
                 if (node.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
                     return node;
                 }
-                TreeNode foundNode = FindNodeByText(node.Nodes, searchText);
+                RichNode foundNode = FindNodeByText(node.Nodes, searchText);
                 if (foundNode != null)
                 {
                     return foundNode;
@@ -63,7 +58,7 @@ namespace DialogSystem
 
         private void SearchNode(TreeNodeCollection nodes, string searchText, List<string> matchingOptions)
         {
-            foreach (TreeNode node in nodes)
+            foreach (RichNode node in nodes)
             {
                 if (node.Text.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
@@ -145,18 +140,99 @@ namespace DialogSystem
         {
             foreach (var property in jsonObject.Properties())
             {
-                TreeNode node = new TreeNode(property.Name);
+                RichNode node = new RichNode();
+                node.Text = property.Name;
                 treeView.Nodes.Add(node);
                 AddChildrenToNode(node, (JObject)property.Value);
             }
         }
 
-        private void AddChildrenToNode(TreeNode parentNode, JObject jsonObject)
+        private void AddChildrenToNode(RichNode parentNode, JObject jsonObject)
         {
             foreach (var key in jsonObject.Properties())
             {
-                 
+                RichNode node = new RichNode();
+                if (key.Value is JObject)
+                {
+                    switch (key.Name)
+                    {
+                        case "opt":
+                            node.opt = (JObject)key.Value;
+                            node.Text = "选项";
+                            node.BackColor = ThemeColor.Option;
+                            break;
+                        case "act":
+                            node.act = (JObject)key.Value;
+                            node.Text = "行为";
+                            node.BackColor = ThemeColor.Action;
+                            break;
+                        default:
+                            int id;
+                            if (int.TryParse(key.Name, out id))
+                            {
+                                node.Text = key.Value["txt"].ToString();
+                                node.id = id;
+                            }
+                            else
+                                node.Text = key.Name;
+                            break;
+                    }
+                    parentNode.Nodes.Add(node);
+                    AddChildrenToNode(node, (JObject)key.Value);
+                }
+                else 
+                { 
+                    switch(key.Name)
+                    {
+                        case "chr":
+                            parentNode.chr=key.Value.ToString();
+                            break;
+                        case "txt":
+                            parentNode.txt=key.Value.ToString();
+                            break;
+                        case "bgm":
+                            node.Text= "🎵" + key.Value.ToString();
+                            node.ForeColor = ThemeColor.Action;
+                            parentNode.Nodes.Add(node);
+                            break;
+                        case "rcd":
+                            node.Text= "🖊️"+ key.Value.ToString();
+                            node.ForeColor = ThemeColor.Action;
+                            parentNode.Nodes.Add(node);
+                            break ;
+                        case "fun":
+                            node.Text = "⚡" + key.Value.ToString();
+                            node.ForeColor = ThemeColor.Action;
+                            parentNode.Nodes.Add(node);
+                            break;
+                            
+                    }
+                }
             }
+        }
+
+        private void view_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            selected=e.Node as RichNode;
+            id.Text = "ID：" + selected.id.ToString();
+            chr_edit.Text= selected.chr;
+            txt_edit.Text = selected.txt;
+            switch(selected.Text)
+            {
+                case "选项":
+                    break;
+
+            }
+        }
+
+        private void textBox2_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
