@@ -5,42 +5,40 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Drawing;
+using Newtonsoft.Json.Linq;
 
 namespace DialogSystem
 {
     enum NodeType
     {
-        Character,
-        Text,
+        OptionRoot,
+        ActionRoot,
         Option,
         Action,
-        Next
+        Dialog,
+    }
+    static class ThemeColor
+    {
+        public static Color Option=Color.LimeGreen;
+        public static Color Action = Color.Orange;
+        public static Color Dialog = Color.BlueViolet;
     }
     class RichNode:TreeNode
     {
+        public int id = 0;
+        public string chr=null;
+        public string txt=null;
+        public string next=null;
+        public JObject opt=null;
+        public JObject act=null;
+
         NodeType _type;
-        public NodeType Type
-        {
-            get { return _type; }
-            set { _type = value; 
-                switch (value)
-                {
-                    case NodeType.Character:
-                        BackColor=Color.CornflowerBlue;
-                    break;
-                    case NodeType.Text:
-                        BackColor = Color.MediumSeaGreen;
-                        break;
-                    case NodeType.Option:
-                        BackColor = Color.Salmon;
-                        break;
-                    case NodeType.Action:
-                        BackColor = Color.Orange;
-                        break;
-                    case NodeType.Next:
-                        BackColor = Color.DarkViolet;
-                        break;
-                }
-            } }
+        public NodeType nodeType 
+        { get { return _type; }
+            set
+            {
+
+            }
+        }
     }
 }
