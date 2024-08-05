@@ -58,7 +58,7 @@ namespace DialogSystem
             this.view.Location = new System.Drawing.Point(0, 0);
             this.view.Margin = new System.Windows.Forms.Padding(2);
             this.view.Name = "view";
-            this.view.Size = new System.Drawing.Size(740, 798);
+            this.view.Size = new System.Drawing.Size(740, 762);
             this.view.TabIndex = 0;
             this.view.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.view_AfterSelect);
             // 
@@ -70,10 +70,10 @@ namespace DialogSystem
             this.search_list.ForeColor = System.Drawing.Color.Black;
             this.search_list.FormattingEnabled = true;
             this.search_list.ItemHeight = 27;
-            this.search_list.Location = new System.Drawing.Point(1001, 112);
+            this.search_list.Location = new System.Drawing.Point(1001, 114);
             this.search_list.Margin = new System.Windows.Forms.Padding(2);
             this.search_list.Name = "search_list";
-            this.search_list.Size = new System.Drawing.Size(390, 675);
+            this.search_list.Size = new System.Drawing.Size(410, 648);
             this.search_list.TabIndex = 2;
             this.search_list.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged_1);
             // 
@@ -81,12 +81,12 @@ namespace DialogSystem
             // 
             this.search.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.search.Font = new System.Drawing.Font("微软雅黑 Light", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.search.Location = new System.Drawing.Point(1001, 0);
+            this.search.Location = new System.Drawing.Point(1001, 3);
             this.search.Margin = new System.Windows.Forms.Padding(2);
             this.search.Multiline = true;
             this.search.Name = "search";
             this.search.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.search.Size = new System.Drawing.Size(390, 100);
+            this.search.Size = new System.Drawing.Size(410, 100);
             this.search.TabIndex = 1;
             this.search.TextChanged += new System.EventHandler(this.textBox1_TextChanged_1);
             // 
@@ -117,6 +117,7 @@ namespace DialogSystem
             this.act.TabIndex = 11;
             this.act.Text = "创建行为节点";
             this.act.UseVisualStyleBackColor = false;
+            this.act.Click += new System.EventHandler(this.act_Click);
             // 
             // opt
             // 
@@ -129,6 +130,7 @@ namespace DialogSystem
             this.opt.TabIndex = 10;
             this.opt.Text = "创建选项节点";
             this.opt.UseVisualStyleBackColor = false;
+            this.opt.Click += new System.EventHandler(this.opt_Click);
             // 
             // txt
             // 
@@ -195,7 +197,7 @@ namespace DialogSystem
             this.panel2.Controls.Add(this.opt_edit);
             this.panel2.Location = new System.Drawing.Point(745, 504);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(251, 283);
+            this.panel2.Size = new System.Drawing.Size(251, 258);
             this.panel2.TabIndex = 4;
             // 
             // label1
@@ -235,7 +237,7 @@ namespace DialogSystem
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.GhostWhite;
-            this.ClientSize = new System.Drawing.Size(1393, 797);
+            this.ClientSize = new System.Drawing.Size(1422, 763);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.search_list);

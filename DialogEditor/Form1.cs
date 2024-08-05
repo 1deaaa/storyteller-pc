@@ -152,7 +152,7 @@ namespace DialogSystem
             foreach (var key in jsonObject.Properties())
             {
                 RichNode node = new RichNode();
-                if (key.Value is JObject)
+                if (key.Value is JObject)//处理需要分支的节点
                 {
                     switch (key.Name)
                     {
@@ -165,6 +165,9 @@ namespace DialogSystem
                             node.act = (JObject)key.Value;
                             node.Text = "行为";
                             node.BackColor = ThemeColor.Action;
+                            break;
+                        case "brc":
+                            node.Text = "分支";
                             break;
                         default:
                             int id;
@@ -231,6 +234,16 @@ namespace DialogSystem
         }
 
         private void button1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void opt_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void act_Click(object sender, EventArgs e)
         {
 
         }

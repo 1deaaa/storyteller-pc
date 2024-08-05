@@ -22,6 +22,7 @@ namespace DialogSystem
         public static Color Option=Color.LimeGreen;
         public static Color Action = Color.Orange;
         public static Color Dialog = Color.BlueViolet;
+        public static Color Branch=Color.SkyBlue;
     }
     class RichNode:TreeNode
     {
