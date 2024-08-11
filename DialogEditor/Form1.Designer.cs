@@ -188,6 +188,8 @@ namespace DialogSystem
             this.txt_edit.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txt_edit.Size = new System.Drawing.Size(247, 241);
             this.txt_edit.TabIndex = 4;
+            this.txt_edit.TextChanged += new System.EventHandler(this.txt_edit_TextChanged);
+            this.txt_edit.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txt_edit_KeyDown);
             // 
             // panel2
             // 

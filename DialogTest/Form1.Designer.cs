@@ -1,4 +1,4 @@
-﻿namespace DialogTest
+﻿namespace DialogSystem
 {
     partial class MainUI
     {

@@ -16,10 +16,12 @@ namespace DialogSystem
 {
     public partial class Form1 : Form
     {
-        RichNode selected;
-        RichNode _last_slc;
-        public static JToken JsonSource = JToken.Parse(File.ReadAllText("对话.json"));
-        RichNode currentNode;
+        RichNode currentNode;//当前选中节点
+        RichNode _last_slc;//上一个选中节点
+        public static JToken jsonSource = JToken.Parse(File.ReadAllText(@"..\..\..\对话.json"));
+        public static string currentScene = "";
+        public static int currentId;
+        int _option_id;//记录选项所属父级id
         public Form1()
         {
             InitializeComponent();
@@ -29,7 +31,7 @@ namespace DialogSystem
 
         void LoadTree()
         {
-            AddNodesToTreeView(view, (JObject)JsonSource);
+            AddRootsToTreeView(view, (JObject)jsonSource);
         }
 
         private RichNode FindNodeByText(TreeNodeCollection nodes, string searchText)
@@ -112,16 +114,16 @@ namespace DialogSystem
                 Thread td = new Thread(() =>
                 {
                     // 根据选中的项在树状图中查找对应的节点
-                    selected = FindNodeByText(view.Nodes, selectedOption);
-                    if (selected != null)
+                    currentNode = FindNodeByText(view.Nodes, selectedOption);
+                    if (currentNode != null)
                     {
                         // 自动选中树状图中的节点
                         if (_last_slc != null)
                             _last_slc.BackColor = Color.White;
-                        view.SelectedNode = selected;
-                        selected.BackColor = Color.Red;
-                        _last_slc = selected;
-                        selected.EnsureVisible();
+                        view.SelectedNode = currentNode;
+                        currentNode.BackColor = Color.Red;
+                        _last_slc = currentNode;
+                        currentNode.EnsureVisible();
                     }
                 });
                 td.Start();
@@ -136,54 +138,61 @@ namespace DialogSystem
             search_list.Size = new Size(search.Width, Height - 40 - 4);
         }
 
-        private void AddNodesToTreeView(TreeView treeView, JObject jsonObject)
+        private void AddRootsToTreeView(TreeView treeView, JObject jsonObject)
         {
-            foreach (var property in jsonObject.Properties())
+            foreach (var scene in jsonObject.Properties())
             {
-                RichNode node = new RichNode();
-                node.Text = property.Name;
-                treeView.Nodes.Add(node);
-                AddChildrenToNode(node, (JObject)property.Value);
+                RichNode rootNode = new RichNode();
+                rootNode.Text = scene.Name;
+                currentScene = scene.Name;
+                treeView.Nodes.Add(rootNode);
+                AddToParent(rootNode, (JObject)scene.Value);
             }
         }
 
-        private void AddChildrenToNode(RichNode parentNode, JObject jsonObject)
+        private void AddToParent(RichNode parentNode, JObject jsonObject)
         {
             foreach (var key in jsonObject.Properties())
             {
                 RichNode node = new RichNode();
+                node.scene = currentScene;
                 if (key.Value is JObject)//处理需要分支的节点
                 {
-                    switch (key.Name)
+                    int id;
+                    if (int.TryParse(key.Name, out id) && id > 100)//所以选项名字严禁纯数字！！！
                     {
-                        case "opt":
-                            node.opt = (JObject)key.Value;
-                            node.Text = "选项";
-                            node.BackColor = ThemeColor.Option;
-                            break;
-                        case "act":
-                            node.act = (JObject)key.Value;
-                            node.Text = "行为";
-                            node.BackColor = ThemeColor.Action;
-                            break;
-                        case "brc":
-                            node.Text = "分支";
-                            break;
-                        default:
-                            int id;
-                            if (int.TryParse(key.Name, out id))
-                            {
-                                node.Text = key.Value["txt"].ToString();
-                                node.id = id;
-                            }
-                            else
-                                node.Text = key.Name;
-                            break;
+                        currentId = id;
+                        node.Text =Map.ChrMap[Convert.ToInt32(key.Value["chr"])] +"："+ key.Value["txt"].ToString();
+                        node.id = currentId;
+                    }
+                    else
+                    {
+                        node.id=currentId;
+                        switch (key.Name)
+                        {
+                            case "opt":
+                                node.opt = (JObject)key.Value;
+                                node.Text = "✨选项";
+                                node.ForeColor = ThemeColor.Option;
+                                break;
+                            case "act":
+                                node.act = (JObject)key.Value;
+                                node.Text = "⚡行为";
+                                node.ForeColor = ThemeColor.Action;
+                                break;
+                            case "brc":
+                                node.Text = "🌿分支";
+                                break;
+                            default:
+                                    node.Text = key.Name;//只有可能是选项名字了
+                                    node.BackColor = ThemeColor.Option;
+                                break;
+                        }
                     }
                     parentNode.Nodes.Add(node);
-                    AddChildrenToNode(node, (JObject)key.Value);
+                    AddToParent(node, (JObject)key.Value);
                 }
-                else 
+                else//遍历到底部节点
                 { 
                     switch(key.Name)
                     {
@@ -195,17 +204,17 @@ namespace DialogSystem
                             break;
                         case "bgm":
                             node.Text= "🎵" + key.Value.ToString();
-                            node.ForeColor = ThemeColor.Action;
+                            node.BackColor = ThemeColor.Action;
                             parentNode.Nodes.Add(node);
                             break;
-                        case "rcd":
+                        case "rcd"://记录当前选项
                             node.Text= "🖊️"+ key.Value.ToString();
-                            node.ForeColor = ThemeColor.Action;
+                            node.BackColor = ThemeColor.Action;
                             parentNode.Nodes.Add(node);
                             break ;
                         case "fun":
                             node.Text = "⚡" + key.Value.ToString();
-                            node.ForeColor = ThemeColor.Action;
+                            node.BackColor = ThemeColor.Action;
                             parentNode.Nodes.Add(node);
                             break;
                             
@@ -216,11 +225,11 @@ namespace DialogSystem
 
         private void view_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            selected=e.Node as RichNode;
-            id.Text = "ID：" + selected.id.ToString();
-            chr_edit.Text= selected.chr;
-            txt_edit.Text = selected.txt;
-            switch(selected.Text)
+            currentNode=e.Node as RichNode;
+            id.Text = "ID：" + currentNode.id.ToString();
+            chr_edit.Text= currentNode.chr;
+            txt_edit.Text = currentNode.txt;
+            switch(currentNode.Text)
             {
                 case "选项":
                     break;
@@ -246,6 +255,23 @@ namespace DialogSystem
         private void act_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void txt_edit_TextChanged(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void txt_edit_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                currentNode.txt = txt_edit.Text;
+                currentNode.Text = currentNode.txt;
+                //保存到json
+
+
+            }
         }
     }
 }

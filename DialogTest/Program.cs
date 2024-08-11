@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace DialogTest
+namespace DialogSystem
 {
     internal static class Program
     {

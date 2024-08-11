@@ -5,12 +5,11 @@ using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
-namespace DialogTest
+namespace DialogSystem
 {
     public partial class MainUI : Form
     {
-        public static JObject JsonSource = JObject.Parse(System.IO.File.ReadAllText("对话.json"));
-        //层级设计:总对象(obj)->索引(array)->键值对(prop)
+        public static JObject JsonSource = JObject.Parse(System.IO.File.ReadAllText(@"..\..\..\对话.json"));
         public MainUI()
         {
             InitializeComponent();
@@ -35,7 +34,7 @@ namespace DialogTest
 
         }
     }
-    static class Dialog
+    public static class Dialog
     {
         //对于vs调试显示的json数据 外层都被加了一组{} 实际上是不存在的
         public static int Choice = 0;//注意 从1开始！！！
@@ -48,9 +47,6 @@ namespace DialogTest
         static int RestOfGroupMember = 0;//数组/对象内的剩余成员数 用于确定是否要跳出内层 #目前假定分支末端只会跳转到主线/使用next跳转至场景
         static string NextDialog = "";//指定next所指向的下一个对话场景 为空表示不跳转
         static List<ChoiceBtn> branch_btns = new();
-        public delegate void ActionHandler();
-        public static Dictionary<string, ActionHandler> ActMap;
-        public static Dictionary<int, string> ChrMap;
         public static bool DialogEnabled = true;
         public static JToken DialogScene;
         #region Debug
@@ -96,21 +92,6 @@ namespace DialogTest
             foreach (JObject obj in DialogScene)
                 MainObj.Add(obj);
             CurrentObj = MainObj[0];
-            ActMap ??= new Dictionary<string, ActionHandler>
-            {
-                    #region 行为映射表
-                //绑定所有指令和函数
-                    {"动作",Method.Animate }
-                    #endregion 行为映射表
-            };
-            ChrMap ??= new Dictionary<int, string>()
-            {
-                    #region 角色映射表
-                    {0,"我" },
-                    {1,"..." },
-                    { 2,"可可酱"}
-                    #endregion 角色映射表
-            };
     }
 
         private static void FakeBtnClick(object s, EventArgs e)//空选项 点了没用等于继续对话
@@ -168,7 +149,7 @@ namespace DialogTest
                 switch(key.Name)
                 {
                     case "chr":
-                        ui.spk.Text = ChrMap[(int)key.Value];
+                        ui.spk.Text = Map.ChrMap[(int)key.Value];
                         break;
                     case "txt":
                         ui.txt.Text = key.Value.ToString();
@@ -182,8 +163,8 @@ namespace DialogTest
                                     Method.Music(acts.Value.ToString());
                                     break;
                                 case "fun":
-                                    if (ActMap.ContainsKey(acts.Value.ToString()))
-                                        ActMap[acts.Value.ToString()]();//对应委托
+                                    if (Map.ActMap.ContainsKey(acts.Value.ToString()))
+                                        Map.ActMap[acts.Value.ToString()]();//对应委托
                                     break;
                                 case "brc":
                                     Method.RecordBranch(acts.Value.ToString());
@@ -230,25 +211,6 @@ namespace DialogTest
             ui.txt.Dispose();
             ui.spk.Dispose();       
          }
-        static class Method
-        {
-            public static void Error(string e)
-            {
-                MessageBox.Show(e,"o(TヘTo)",MessageBoxButtons.OK,MessageBoxIcon.Error);
-            }
-            public static void Music(string bgm)
-            {
-                Program.UI.Text = "正在播放"+bgm;
-            }
-            public static void Animate()
-            {
-                Program.UI.Text = "执行到了某个动作";
-            }
-            public static void RecordBranch(string brc)
-            {
-                Program.UI.Text = "已经写入进度：" + brc;
-            }
-        }
         class ChoiceBtn : Button
         {
             public int Choice = 0;

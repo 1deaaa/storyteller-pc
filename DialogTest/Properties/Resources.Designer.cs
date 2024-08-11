@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace DialogTest.Properties {
+namespace DialogSystem.Properties {
     using System;
     
     
