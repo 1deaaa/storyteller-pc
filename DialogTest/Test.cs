@@ -37,18 +37,19 @@ namespace DialogSystem
     public static class Dialog
     {
         //对于vs调试显示的json数据 外层都被加了一组{} 实际上是不存在的
-        public static int Choice = 0;//注意 从1开始！！！
+        public static int ChoiceCureent;
         public static int CurrentMainObjID = 0;//目前遍历到的主线对话对象
-        static JArray CurrentGroup;
+        static JObject CurrentGroup;
         public static JObject CurrentObj;//目前遍历到的对话对象
-        public static List<JObject> MainObj = new();//每个场景下的主线对话对象 默认下一组就是如此
-        static bool IsChoice=false;
+        public static List<JObject> MainObj = new();//每个场景下的主线对话对象
+        static bool IsOpt=false;
         public static bool EndDialog=false;//下一次点击直接关闭对话
-        static int RestOfGroupMember = 0;//数组/对象内的剩余成员数 用于确定是否要跳出内层 #目前假定分支末端只会跳转到主线/使用next跳转至场景
+        static List<int> RestOfGroupMember;//对象内的剩余成员数 用于确定是否要跳出内层 序号为层级（深度） 成员为具体数 #目前假定分支末端只会跳转到主线/使用next跳转至场景
+        static int DepthCurrent = 0;//当前遍历深度 从零开始
         static string NextDialog = "";//指定next所指向的下一个对话场景 为空表示不跳转
         static List<ChoiceBtn> branch_btns = new();
         public static bool DialogEnabled = true;
-        public static JToken DialogScene;
+        public static JObject Scene;
         #region Debug
         static void Debug(object t)
         {
@@ -83,15 +84,16 @@ namespace DialogSystem
         public static void SceneInit(string _scene)
         {
             //??=如果为null才赋值 防止重复赋值
-            DialogScene = MainUI.JsonSource[_scene];//根（场景）键值对的值为数组  Token代表任意数据节点 Prop代表键值对 Object代表{xxx}
+            Scene = (JObject)MainUI.JsonSource[_scene];//根（场景）键值对的值为数组  Token代表任意数据节点 Prop代表键值对 Object代表{xxx}
+            //查找名为_scene的键值
             MainObj.Clear();
             CurrentMainObjID = 0;
             NextDialog = "";
-            IsChoice = false;
-            RestOfGroupMember = 0;
-            foreach (JObject obj in DialogScene)
-                MainObj.Add(obj);
-            CurrentObj = MainObj[0];
+            IsOpt = false;
+            RestOfGroupMember.Clear();
+            RestOfGroupMember.Add(Scene.Count);
+            DepthCurrent= 0;
+            CurrentObj = (JObject)Scene.Properties().First().Value;//获取场景下的第一个对话对象
     }
 
         private static void FakeBtnClick(object s, EventArgs e)//空选项 点了没用等于继续对话
@@ -107,15 +109,15 @@ namespace DialogSystem
         private static void ChoiceBtn_Click(object sender, EventArgs e)//选项点击 也相当于点击了一次继续
         {
             ChoiceBtn clicked_btn = (ChoiceBtn)sender;
-            Choice = clicked_btn.Choice;
+            ChoiceCureent = clicked_btn.Choice;
             //
-            Program.UI.Text = "选择了选项" + Choice.ToString();
+            Program.UI.Text = "选择了选项" + ChoiceCureent.ToString();
             //
-            CurrentGroup = (JArray)CurrentObj[clicked_btn.Text];//根据选项定位
-            RestOfGroupMember = CurrentGroup.Count - 1;//目前已经处理过第一个
+            CurrentGroup = (JObject)CurrentObj[clicked_btn.Text];//根据选项定位
+            RestOfGroupMember[DepthCurrent] = CurrentGroup.Count - 1;//目前已经处理过第一个
             try
             {
-                CurrentObj = (JObject)CurrentGroup[0];
+                CurrentObj = (JObject)CurrentGroup.Properties().First().Value;
             }
             catch(Exception error)
             {
@@ -128,7 +130,7 @@ namespace DialogSystem
             DisplayOne(CurrentObj, Program.UI);
         }
 
-        public static void DisplayOne(JObject obj,MainUI ui)//传入一个对话对象 每个对话对象的根级必为obj 而深处必只有prop
+        public static void DisplayOne(JObject obj,MainUI ui)//传入一个对话对象
         {
             if (EndDialog)
             {
@@ -136,13 +138,13 @@ namespace DialogSystem
                 EndDialog = false;
                 return;
             }
-            if(NextDialog!="")
+            if (NextDialog!="")
             {
                 SceneInit(NextDialog);
                 DisplayOne(CurrentObj, Program.UI);
                 return;
             }
-            IsChoice=false;
+            IsOpt=false;
             DialogEnabled = true;
             foreach (JProperty key in obj.Properties())//遍历对象下所有一级子节点键值对
             {
@@ -174,11 +176,11 @@ namespace DialogSystem
                         break;
                     case "opt":
                         DialogEnabled = false;
-                        IsChoice=true;
+                        IsOpt=true;
                         RestOfGroupMember = 0;
                         CurrentObj = (JObject)CurrentObj["opt"];
-                        int i = 1;
-                        foreach (JProperty options in key.Value)//"option":[xxx]
+                        int i = 0;
+                        foreach (JProperty options in key.Value)
                         {
                             ChoiceBtn btn = new();
                             branch_btns.Add(btn);
@@ -199,12 +201,14 @@ namespace DialogSystem
                         break;
                 }
             }
-            if(!IsChoice&&NextDialog==""&&RestOfGroupMember==0&& CurrentMainObjID + 1<MainObj.Count)   
+            if (!IsOpt && NextDialog == "" && DepthCurrent == 0 && RestOfGroupMember[0] > 0)//跳回主线
                 CurrentObj = MainObj[++CurrentMainObjID];
-            else if (RestOfGroupMember > 0)
-                CurrentObj = (JObject)CurrentGroup[CurrentGroup.Count - RestOfGroupMember];
-            else if(CurrentMainObjID + 1 >= MainObj.Count && NextDialog=="")
-                EndDialog=true;
+            else if (RestOfGroupMember[DepthCurrent] == 0&&DepthCurrent>0)
+                DepthCurrent -= 1;
+            else if (RestOfGroupMember[DepthCurrent] > 0)//还在组内
+                CurrentObj = (JObject)CurrentGroup.Properties().ElementAt(RestOfGroupMember[DepthCurrent]).Value;
+            else if (CurrentMainObjID + 1 >= MainObj.Count && NextDialog == "")//对话结束且无结束后跳转
+                EndDialog = true;
         }
         public static void End (MainUI ui)
         {

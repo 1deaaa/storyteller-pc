@@ -14,7 +14,7 @@ using System.IO;
 
 namespace DialogSystem
 {
-    public partial class Form1 : Form
+    public partial class Editor : Form
     {
         RichNode currentNode;//当前选中节点
         RichNode _last_slc;//上一个选中节点
@@ -22,7 +22,7 @@ namespace DialogSystem
         public static string currentScene = "";
         public static int currentId;
         int _option_id;//记录选项所属父级id
-        public Form1()
+        public Editor()
         {
             InitializeComponent();
             CheckForIllegalCrossThreadCalls = false;

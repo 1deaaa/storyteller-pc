@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace DialogSystem
 {
-    partial class Form1
+    partial class Editor
     {
         /// <summary>
         ///  Required designer variable.

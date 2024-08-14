@@ -39,9 +39,9 @@
             this.txt.Cursor = System.Windows.Forms.Cursors.Hand;
             this.txt.Font = new System.Drawing.Font("微软雅黑 Light", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.txt.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.txt.Location = new System.Drawing.Point(-3, 538);
+            this.txt.Location = new System.Drawing.Point(-3, 495);
             this.txt.Name = "txt";
-            this.txt.Size = new System.Drawing.Size(1221, 207);
+            this.txt.Size = new System.Drawing.Size(1085, 125);
             this.txt.TabIndex = 0;
             this.txt.Text = "对话框";
             this.txt.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -52,9 +52,9 @@
             this.spk.BackColor = System.Drawing.Color.PaleTurquoise;
             this.spk.Font = new System.Drawing.Font("微软雅黑 Light", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.spk.ForeColor = System.Drawing.Color.SeaGreen;
-            this.spk.Location = new System.Drawing.Point(530, 538);
+            this.spk.Location = new System.Drawing.Point(470, 495);
             this.spk.Name = "spk";
-            this.spk.Size = new System.Drawing.Size(155, 46);
+            this.spk.Size = new System.Drawing.Size(138, 38);
             this.spk.TabIndex = 1;
             this.spk.Text = "角色";
             this.spk.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -64,22 +64,23 @@
             this.label1.BackColor = System.Drawing.Color.Transparent;
             this.label1.Font = new System.Drawing.Font("微软雅黑 Light", 20F);
             this.label1.ForeColor = System.Drawing.Color.Black;
-            this.label1.Location = new System.Drawing.Point(12, 9);
+            this.label1.Location = new System.Drawing.Point(11, 8);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(270, 76);
+            this.label1.Size = new System.Drawing.Size(240, 63);
             this.label1.TabIndex = 2;
             this.label1.Text = "↑调试信息";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // MainUI
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(1209, 743);
+            this.ClientSize = new System.Drawing.Size(1075, 619);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.spk);
             this.Controls.Add(this.txt);
+            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "MainUI";
             this.Text = "MainUI";
             this.Load += new System.EventHandler(this.MainUI_Load);
