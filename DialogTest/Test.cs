@@ -177,7 +177,7 @@ namespace DialogSystem
                     case "opt":
                         DialogEnabled = false;
                         IsOpt=true;
-                        RestOfGroupMember = 0;
+                        //RestOfGroupMember = 0;
                         CurrentObj = (JObject)CurrentObj["opt"];
                         int i = 0;
                         foreach (JProperty options in key.Value)
