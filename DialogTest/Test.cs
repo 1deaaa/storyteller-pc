@@ -111,7 +111,7 @@ namespace DialogSystem
             ChoiceBtn clicked_btn = (ChoiceBtn)sender;
             ChoiceCureent = clicked_btn.Choice;
             //
-            Program.UI.Text = "曼波out" + ChoiceCureent.ToString();
+            Program.UI.Text = "选择了选项：" + ChoiceCureent.ToString();
             //
             CurrentGroup = (JObject)CurrentObj[clicked_btn.Text];//根据选项定位
             RestOfGroupMember[DepthCurrent] = CurrentGroup.Count - 1;//目前已经处理过第一个
@@ -177,7 +177,7 @@ namespace DialogSystem
                     case "opt":
                         DialogEnabled = false;
                         IsOpt=true;
-                        //RestOfGroupMember = 0;
+                        RestOfGroupMember = 0;
                         CurrentObj = (JObject)CurrentObj["opt"];
                         int i = 0;
                         foreach (JProperty options in key.Value)
