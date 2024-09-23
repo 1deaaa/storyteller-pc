@@ -44,7 +44,7 @@ namespace DialogSystem
         public static List<JObject> MainObj = new();//每个场景下的主线对话对象
         static bool IsOpt=false;
         public static bool EndDialog=false;//下一次点击直接关闭对话
-        static List<int> RestOfGroupMember;//对象内的剩余成员数 用于确定是否要跳出内层 序号为层级（深度） 成员为具体数 #目前假定分支末端只会跳转到主线/使用next跳转至场景
+        static List<int> RestOfGroupMember = new();//对象内的剩余成员数 用于确定是否要跳出内层 序号为层级（深度） 成员为具体数 #目前假定分支末端只会跳转到主线/使用next跳转至场景
         static int DepthCurrent = 0;//当前遍历深度 从零开始
         static string NextDialog = "";//指定next所指向的下一个对话场景 为空表示不跳转
         static List<ChoiceBtn> branch_btns = new();
@@ -177,7 +177,7 @@ namespace DialogSystem
                     case "opt":
                         DialogEnabled = false;
                         IsOpt=true;
-                        RestOfGroupMember = 0;
+                        //RestOfGroupMember = 0;
                         CurrentObj = (JObject)CurrentObj["opt"];
                         int i = 0;
                         foreach (JProperty options in key.Value)

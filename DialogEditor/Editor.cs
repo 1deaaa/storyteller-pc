@@ -156,7 +156,7 @@ namespace DialogSystem
             {
                 RichNode node = new RichNode();
                 node.scene = currentScene;
-                if (key.Value is JObject)//处理需要分支的节点
+                if (key.Value is JObject)//处理值为object分支的节点
                 {
                     int id;
                     if (int.TryParse(key.Name, out id) && id > 100)//所以选项名字严禁纯数字！！！
@@ -192,7 +192,7 @@ namespace DialogSystem
                     parentNode.Nodes.Add(node);
                     AddToParent(node, (JObject)key.Value);
                 }
-                else//遍历到底部节点
+                else//处理值为单个value的节点
                 { 
                     switch(key.Name)
                     {
