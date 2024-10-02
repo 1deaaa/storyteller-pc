@@ -44,7 +44,7 @@ namespace DialogSystem
         public static List<JObject> MainObj = new();//每个场景下的主线对话对象
         static bool IsOpt=false;
         public static bool EndDialog=false;//下一次点击直接关闭对话
-        static List<int> RestOfGroupMember;//对象内的剩余成员数 用于确定是否要跳出内层 序号为层级（深度） 成员为具体数 #目前假定分支末端只会跳转到主线/使用next跳转至场景
+        static List<int> RestOfGroupMember = new();//对象内的剩余成员数 用于确定是否要跳出内层 序号为层级（深度） 成员为具体数 #目前假定分支末端只会跳转到主线/使用next跳转至场景
         static int DepthCurrent = 0;//当前遍历深度 从零开始
         static string NextDialog = "";//指定next所指向的下一个对话场景 为空表示不跳转
         static List<ChoiceBtn> branch_btns = new();
@@ -111,7 +111,7 @@ namespace DialogSystem
             ChoiceBtn clicked_btn = (ChoiceBtn)sender;
             ChoiceCureent = clicked_btn.Choice;
             //
-            Program.UI.Text = "曼波满钵满钵" + ChoiceCureent.ToString();
+            Program.UI.Text = "选择了选项：" + ChoiceCureent.ToString();
             //
             CurrentGroup = (JObject)CurrentObj[clicked_btn.Text];//根据选项定位
             RestOfGroupMember[DepthCurrent] = CurrentGroup.Count - 1;//目前已经处理过第一个
