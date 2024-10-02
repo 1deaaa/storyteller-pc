@@ -156,13 +156,14 @@ namespace DialogSystem
             {
                 RichNode node = new RichNode();
                 node.scene = currentScene;
-                if (key.Value is JObject)//处理需要分支的节点
+                if (key.Value is JObject)//处理分支节点
                 {
                     int id;
                     if (int.TryParse(key.Name, out id) && id > 100)//所以选项名字严禁纯数字！！！
                     {
                         currentId = id;
-                        node.Text =Map.ChrMap[Convert.ToInt32(key.Value["chr"])] +"："+ key.Value["txt"].ToString();
+                        if(key.Value["txt"]!=null)
+                            node.Text =Map.ChrMap[Convert.ToInt32(key.Value["chr"])] +"："+ key.Value["txt"];
                         node.id = currentId;
                     }
                     else
@@ -192,7 +193,7 @@ namespace DialogSystem
                     parentNode.Nodes.Add(node);
                     AddToParent(node, (JObject)key.Value);
                 }
-                else//遍历到底部节点
+                else//处理单节点
                 { 
                     switch(key.Name)
                     {
