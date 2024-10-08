@@ -16,11 +16,11 @@ namespace DialogSystem
 {
     public partial class Editor : Form
     {
-        RichNode currentNode;//当前选中节点
+        RichNode CurrentNode;//当前选中节点
         RichNode _last_slc;//上一个选中节点
-        public static JToken jsonSource = JToken.Parse(File.ReadAllText(@"..\..\..\对话.json"));
-        public static string currentScene = "";
-        public static int currentId;
+        public static JToken JsonSource = JToken.Parse(File.ReadAllText(@"..\..\..\对话.json"));
+        public static string CurrentScene = "";
+        public static int CurrentId;
         int _option_id;//记录选项所属父级id
         public Editor()
         {
@@ -31,7 +31,7 @@ namespace DialogSystem
 
         void LoadTree()
         {
-            AddRootsToTreeView(view, (JObject)jsonSource);
+            AddSceneToTreeView(view, (JObject)JsonSource);
         }
 
         private RichNode FindNodeByText(TreeNodeCollection nodes, string searchText)
@@ -108,22 +108,21 @@ namespace DialogSystem
         {
             // 获取用户在ListBox中选中的项
             string selectedOption = search_list.SelectedItem?.ToString();
-
             if (!string.IsNullOrEmpty(selectedOption))
             {
                 Thread td = new Thread(() =>
                 {
                     // 根据选中的项在树状图中查找对应的节点
-                    currentNode = FindNodeByText(view.Nodes, selectedOption);
-                    if (currentNode != null)
+                    CurrentNode = FindNodeByText(view.Nodes, selectedOption);
+                    if (CurrentNode != null)
                     {
                         // 自动选中树状图中的节点
                         if (_last_slc != null)
                             _last_slc.BackColor = Color.White;
-                        view.SelectedNode = currentNode;
-                        currentNode.BackColor = Color.Red;
-                        _last_slc = currentNode;
-                        currentNode.EnsureVisible();
+                        view.SelectedNode = CurrentNode;
+                        CurrentNode.BackColor = Color.Red;
+                        _last_slc = CurrentNode;
+                        CurrentNode.EnsureVisible();
                     }
                 });
                 td.Start();
@@ -138,37 +137,39 @@ namespace DialogSystem
             search_list.Size = new Size(search.Width, Height - 40 - 4);
         }
 
-        private void AddRootsToTreeView(TreeView treeView, JObject jsonObject)
+        private void AddSceneToTreeView(TreeView treeView, JObject jsonObject)
         {
             foreach (var scene in jsonObject.Properties())
             {
-                RichNode rootNode = new RichNode();
-                rootNode.Text = scene.Name;
-                currentScene = scene.Name;
-                treeView.Nodes.Add(rootNode);
-                AddToParent(rootNode, (JObject)scene.Value);
+                RichNode sceneNode = new RichNode();
+                sceneNode.Text = scene.Name;
+                CurrentScene = scene.Name;
+                treeView.Nodes.Add(sceneNode);
+                AddNodeToParent(sceneNode, (JObject)scene.Value);
             }
         }
 
-        private void AddToParent(RichNode parentNode, JObject jsonObject)
+        private void AddNodeToParent(RichNode parentNode, JObject jsonObject)
         {
             foreach (var key in jsonObject.Properties())
             {
                 RichNode node = new RichNode();
-                node.scene = currentScene;
+                node.Text = "⏬";//默认文本 当连续选项出现时 没有txt节点设置文本
+                node.scene = CurrentScene;
                 if (key.Value is JObject)//处理分支节点
                 {
-                    int id;
-                    if (int.TryParse(key.Name, out id) && id > 100)//所以选项名字严禁纯数字！！！
+                    //对话ID节点
+                    int _id;
+                    if (int.TryParse(key.Name, out _id) && _id > 100)//所以选项名字严禁纯数字！！！
                     {
-                        currentId = id;
-                        if(key.Value["txt"]!=null)
-                            node.Text =Map.ChrMap[Convert.ToInt32(key.Value["chr"])] +"："+ key.Value["txt"];
-                        node.id = currentId;
+                        CurrentId = _id;
+                        node.id = CurrentId;
+                        //处理txt时会给节点设置Text
                     }
+                    //
                     else
                     {
-                        node.id=currentId;
+                        node.id=CurrentId;
                         switch (key.Name)
                         {
                             case "opt":
@@ -190,11 +191,12 @@ namespace DialogSystem
                                 break;
                         }
                     }
-                    parentNode.Nodes.Add(node);
-                    AddToParent(node, (JObject)key.Value);
+                       parentNode.Nodes.Add(node);
+                       AddNodeToParent(node, (JObject)key.Value);
                 }
-                else//处理单节点
+                else//处理单节点 也就是给父节点贴上属性或者子节点
                 { 
+                    node.id = CurrentId;
                     switch(key.Name)
                     {
                         case "chr":
@@ -202,6 +204,7 @@ namespace DialogSystem
                             break;
                         case "txt":
                             parentNode.txt=key.Value.ToString();
+                            parentNode.Text=Map.ChrMap[int.Parse(parentNode.chr)]+"："+key.Value.ToString();
                             break;
                         case "bgm":
                             node.Text= "🎵" + key.Value.ToString();
@@ -217,8 +220,7 @@ namespace DialogSystem
                             node.Text = "⚡" + key.Value.ToString();
                             node.BackColor = ThemeColor.Action;
                             parentNode.Nodes.Add(node);
-                            break;
-                            
+                            break;               
                     }
                 }
             }
@@ -226,11 +228,12 @@ namespace DialogSystem
 
         private void view_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            currentNode=e.Node as RichNode;
-            id.Text = "ID：" + currentNode.id.ToString();
-            chr_edit.Text= currentNode.chr;
-            txt_edit.Text = currentNode.txt;
-            switch(currentNode.Text)
+            CurrentNode=e.Node as RichNode;
+            id.Text = "ID：" + CurrentNode.id.ToString();
+            chr_edit.Text= CurrentNode.chr;
+            txt_edit.Text = CurrentNode.txt;
+            CurrentScene= CurrentNode.scene;
+            switch(CurrentNode.Text)
             {
                 case "选项":
                     break;
@@ -267,12 +270,37 @@ namespace DialogSystem
         {
             if (e.KeyCode == Keys.Enter)
             {
-                currentNode.txt = txt_edit.Text;
-                currentNode.Text = currentNode.txt;
-                //保存到json
-
+                CurrentNode.txt = txt_edit.Text;
+                CurrentNode.Text = CurrentNode.txt;
+                JProperty _j = FindProperty((JObject)JsonSource[CurrentScene],CurrentNode.id.ToString());
+                JObject obj = (JObject)_j.Value;
+                Method.Error(obj);
 
             }
+        }
+
+        public static JProperty FindProperty(JObject obj, string propertyName)
+        {
+            // 如果在最外层找到则返回
+            if (obj.TryGetValue(propertyName, out JToken token))
+            {
+                return new JProperty(propertyName, token);
+            }
+            // 遍历所有子对象进行递归查找
+            foreach (var prop in obj.Properties())
+            {
+                if (prop.Value.Type == JTokenType.Object)
+                {
+                    var found = FindProperty((JObject)prop.Value, propertyName);
+                    if (found != null)
+                    {
+                        return found;
+                    }
+                }
+            }
+
+            // 如果没有找到任何匹配项，则返回null
+            return null;
         }
     }
 }

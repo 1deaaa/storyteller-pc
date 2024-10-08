@@ -69,9 +69,9 @@ namespace DialogSystem
     }
     public static class Method
     {
-        public static void Error(string e)
+        public static void Error(object e)
         {
-            MessageBox.Show(e, "o(TヘTo)", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(e.ToString(), "o(TヘTo)", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         public static void Music(string bgm)
         {

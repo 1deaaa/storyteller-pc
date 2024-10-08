@@ -160,7 +160,7 @@ namespace DialogSystem
             this.id.Name = "id";
             this.id.Size = new System.Drawing.Size(251, 24);
             this.id.TabIndex = 6;
-            this.id.Text = "ID";
+            this.id.Text = "所属对话ID";
             this.id.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // chr_edit
@@ -234,7 +234,7 @@ namespace DialogSystem
             this.opt_edit.TabIndex = 9;
             this.opt_edit.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
-            // Form1
+            // Editor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -248,7 +248,7 @@ namespace DialogSystem
             this.ForeColor = System.Drawing.Color.Black;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Margin = new System.Windows.Forms.Padding(2);
-            this.Name = "Form1";
+            this.Name = "Editor";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load_1);
             this.SizeChanged += new System.EventHandler(this.Form1_SizeChanged);
