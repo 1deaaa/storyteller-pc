@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using System.IO;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace DialogSystem
 {
@@ -18,7 +19,8 @@ namespace DialogSystem
     {
         RichNode CurrentNode;//当前选中节点
         RichNode _last_slc;//上一个选中节点
-        public static JToken JsonSource = JToken.Parse(File.ReadAllText(@"..\..\..\对话.json"));
+        public static string DataFilePath = @"..\..\..\对话.json";
+        public static JToken JsonSource = JToken.Parse(File.ReadAllText(DataFilePath));
         public static string CurrentScene = "";
         public static int CurrentId;
         int _option_id;//记录选项所属父级id
@@ -270,37 +272,74 @@ namespace DialogSystem
         {
             if (e.KeyCode == Keys.Enter)
             {
+                txt_edit.Text = txt_edit.Text.Replace("\n","");
                 CurrentNode.txt = txt_edit.Text;
-                CurrentNode.Text = CurrentNode.txt;
-                JProperty _j = FindProperty((JObject)JsonSource[CurrentScene],CurrentNode.id.ToString());
-                JObject obj = (JObject)_j.Value;
-                Method.Error(obj);
-
+                CurrentNode.Text = Map.ChrMap[int.Parse(CurrentNode.chr)] + "：" + CurrentNode.txt;
+                EditKey((JObject)JsonSource,CurrentScene,CurrentNode.id.ToString(),"txt",txt_edit.Text);
+                File.WriteAllText(DataFilePath,JsonSource.ToString());
             }
         }
 
-        public static JProperty FindProperty(JObject obj, string propertyName)
+        public static void EditKey(JObject obj, string scene,string dialogID, string keyType,JToken newValue,bool _is_root=true)
         {
-            // 如果在最外层找到则返回
-            if (obj.TryGetValue(propertyName, out JToken token))
+            if (obj.TryGetValue(dialogID, out JToken token))
             {
-                return new JProperty(propertyName, token);
-            }
-            // 遍历所有子对象进行递归查找
-            foreach (var prop in obj.Properties())
-            {
-                if (prop.Value.Type == JTokenType.Object)
+                if(newValue.ToString()==""&&keyType=="txt")
                 {
-                    var found = FindProperty((JObject)prop.Value, propertyName);
-                    if (found != null)
+                    if(MessageBox.Show("这将删除其下所有子节点 请务必谨慎操作！！！","⚠️",MessageBoxButtons.YesNo,MessageBoxIcon.Warning)==DialogResult.Yes)
                     {
-                        return found;
+                        obj.Remove(dialogID);
+                        return;
+                    }
+                }
+                obj[dialogID][keyType] = newValue;
+                return;
+            }
+            if (_is_root)
+            {
+                _is_root = false;//标记下次进入场景层遍历
+                foreach (var prop in ((JObject)obj[scene]).Properties())
+                {
+                    if(prop.Name==dialogID)
+                    {
+                        JObject _j=(JObject)prop.Value;
+                        _j[keyType] = newValue;
+                        prop.Value = _j;
+                        return;
+                    }
+                    if (prop.Value.Type == JTokenType.Object)
+                    {
+                        EditKey((JObject)prop.Value, scene,dialogID, keyType,newValue,_is_root);
                     }
                 }
             }
+            else
+            {
+                foreach (var prop in obj.Properties())//已经进入场景层
+                {
+                    if (prop.Value.Type == JTokenType.Object)
+                    {
+                        EditKey((JObject)prop.Value, scene, dialogID, keyType, newValue, _is_root);
+                    }
+                }
+            }
+        }
 
-            // 如果没有找到任何匹配项，则返回null
-            return null;
+        private void chr_edit_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                if(chr_edit.Text=="")
+                {
+                    Method.Error("角色节点禁止为空！！！");
+                    chr_edit.Text = "0";
+                }
+                chr_edit.Text = chr_edit.Text.Replace("\n", "");
+                CurrentNode.chr = chr_edit.Text;
+                CurrentNode.Text = Map.ChrMap[int.Parse(CurrentNode.chr)] + "：" + CurrentNode.chr;
+                EditKey((JObject)JsonSource, CurrentScene, CurrentNode.id.ToString(), "chr", chr_edit.Text);
+                File.WriteAllText(DataFilePath, JsonSource.ToString());
+            }
         }
     }
 }

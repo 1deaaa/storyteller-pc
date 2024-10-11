@@ -73,6 +73,10 @@ namespace DialogSystem
         {
             MessageBox.Show(e.ToString(), "o(TヘTo)", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+        public static void Inf(object e)
+        {
+            MessageBox.Show(e.ToString(), "o(=•ェ•=)m", MessageBoxButtons.OK,MessageBoxIcon.Information );
+        }
         public static void Music(string bgm)
         {
             

@@ -175,6 +175,7 @@ namespace DialogSystem
             this.chr_edit.TabIndex = 5;
             this.chr_edit.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.chr_edit.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
+            this.chr_edit.KeyDown += new System.Windows.Forms.KeyEventHandler(this.chr_edit_KeyDown);
             // 
             // txt_edit
             // 

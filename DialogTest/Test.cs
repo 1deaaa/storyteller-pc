@@ -121,7 +121,7 @@ namespace DialogSystem
             }
             catch(Exception error)
             {
-                Method.Error($"对话数据错误 不要修改游戏文件鸭~\n以下给开发人员看的：{error}");
+                Method.Error($"对话数据错误 不要修改游戏文件~\n以下给开发人员看的：{error}");
                 Environment.Exit(1);
             }
             foreach (var i in branch_btns)
