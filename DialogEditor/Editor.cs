@@ -144,6 +144,7 @@ namespace DialogSystem
             foreach (var scene in jsonObject.Properties())
             {
                 RichNode sceneNode = new RichNode();
+                sceneNode.NodeType = NodeType.Scene;
                 sceneNode.Text = scene.Name;
                 CurrentScene = scene.Name;
                 treeView.Nodes.Add(sceneNode);
@@ -175,21 +176,25 @@ namespace DialogSystem
                         switch (key.Name)
                         {
                             case "opt":
-                                node.opt = (JObject)key.Value;
+                                //node.opt = (JObject)key.Value;
                                 node.Text = "✨选项";
+                                node.NodeType=NodeType.OptionRoot;
                                 node.ForeColor = ThemeColor.Option;
                                 break;
                             case "act":
-                                node.act = (JObject)key.Value;
+                                //node.act = (JObject)key.Value;
                                 node.Text = "⚡行为";
+                                node.NodeType=NodeType.ActionRoot;
                                 node.ForeColor = ThemeColor.Action;
                                 break;
                             case "brc":
                                 node.Text = "🌿分支";
                                 break;
                             default:
-                                    node.Text = key.Name;//只有可能是选项名字了
-                                    node.BackColor = ThemeColor.Option;
+                                node.Text = key.Name;//只有可能是选项名字了
+                                node.opt = key.Name;
+                                node.NodeType=NodeType.Option;
+                                node.BackColor = ThemeColor.Option;
                                 break;
                         }
                     }
@@ -234,13 +239,8 @@ namespace DialogSystem
             id.Text = "ID：" + CurrentNode.id.ToString();
             chr_edit.Text= CurrentNode.chr;
             txt_edit.Text = CurrentNode.txt;
+            opt_edit.Text = CurrentNode.opt;
             CurrentScene= CurrentNode.scene;
-            switch(CurrentNode.Text)
-            {
-                case "选项":
-                    break;
-
-            }
         }
 
         private void textBox2_TextChanged(object sender, EventArgs e)
@@ -272,21 +272,23 @@ namespace DialogSystem
         {
             if (e.KeyCode == Keys.Enter)
             {
+                if (CurrentNode.txt == null)
+                    return;
                 txt_edit.Text = txt_edit.Text.Replace("\n","");
                 CurrentNode.txt = txt_edit.Text;
                 CurrentNode.Text = Map.ChrMap[int.Parse(CurrentNode.chr)] + "：" + CurrentNode.txt;
-                EditKey((JObject)JsonSource,CurrentScene,CurrentNode.id.ToString(),"txt",txt_edit.Text);
+                EditSingleKey((JObject)JsonSource,CurrentScene,CurrentNode.id.ToString(),"txt",txt_edit.Text);
                 File.WriteAllText(DataFilePath,JsonSource.ToString());
             }
         }
 
-        public static void EditKey(JObject obj, string scene,string dialogID, string keyType,JToken newValue,bool _is_root=true)
+        public static void EditSingleKey(JObject obj, string scene,string dialogID, string keyType,JToken newValue,bool _is_root=true)
         {
             if (obj.TryGetValue(dialogID, out JToken token))
             {
-                if(newValue.ToString()==""&&keyType=="txt")
+                if(newValue.ToString()==""&&keyType=="txt")//处理删除操作
                 {
-                    if(MessageBox.Show("这将删除其下所有子节点 请务必谨慎操作！！！","⚠️",MessageBoxButtons.YesNo,MessageBoxIcon.Warning)==DialogResult.Yes)
+                    if(Method.Warn("这将删除所有子节点 请务必谨慎操作！！！"))
                     {
                         obj.Remove(dialogID);
                         return;
@@ -309,7 +311,7 @@ namespace DialogSystem
                     }
                     if (prop.Value.Type == JTokenType.Object)
                     {
-                        EditKey((JObject)prop.Value, scene,dialogID, keyType,newValue,_is_root);
+                        EditSingleKey((JObject)prop.Value, scene,dialogID, keyType,newValue,_is_root);
                     }
                 }
             }
@@ -319,7 +321,53 @@ namespace DialogSystem
                 {
                     if (prop.Value.Type == JTokenType.Object)
                     {
-                        EditKey((JObject)prop.Value, scene, dialogID, keyType, newValue, _is_root);
+                        EditSingleKey((JObject)prop.Value, scene, dialogID, keyType, newValue, _is_root);
+                    }
+                }
+            }
+        }
+        public static void EditObject(JObject obj, string scene, string dialogID, string keyType, string keyName, JToken newKeyName, bool _is_root = true)
+        {
+            if (obj.TryGetValue(dialogID, out JToken token))
+            {
+                if (newKeyName.ToString() == "" && keyType == "txt")//处理删除操作
+                {
+                    if (Method.Warn("这将删除所有子节点 请务必谨慎操作！！！"))
+                    {
+                        obj.Remove(dialogID);
+                        return;
+                    }
+                }
+                obj[dialogID][keyType] = newKeyName;
+                return;
+            }
+            if (_is_root)
+            {
+                _is_root = false;//标记下次进入场景层遍历
+                foreach (var prop in ((JObject)obj[scene]).Properties())
+                {
+                    if (prop.Name == dialogID)
+                    {
+                        JObject _j = (JObject)prop.Value[keyType];
+                        JObject _t= (JObject)_j[keyName];
+                        _j.Remove(keyName);
+                        _j.Add(newKeyName.ToString(), _t);
+                        prop.Value = _j;
+                        return;
+                    }
+                    if (prop.Value.Type == JTokenType.Object)
+                    {
+                        EditObject((JObject)prop.Value, scene, dialogID, keyType, keyName,newKeyName, _is_root);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var prop in obj.Properties())//已经进入场景层
+                {
+                    if (prop.Value.Type == JTokenType.Object)
+                    {
+                        EditObject((JObject)prop.Value, scene, dialogID, keyType, keyName, newKeyName, _is_root);
                     }
                 }
             }
@@ -329,6 +377,8 @@ namespace DialogSystem
         {
             if (e.KeyCode == Keys.Enter)
             {
+                if (CurrentNode.chr == null)
+                    return;
                 if(chr_edit.Text=="")
                 {
                     Method.Error("角色节点禁止为空！！！");
@@ -337,7 +387,24 @@ namespace DialogSystem
                 chr_edit.Text = chr_edit.Text.Replace("\n", "");
                 CurrentNode.chr = chr_edit.Text;
                 CurrentNode.Text = Map.ChrMap[int.Parse(CurrentNode.chr)] + "：" + CurrentNode.chr;
-                EditKey((JObject)JsonSource, CurrentScene, CurrentNode.id.ToString(), "chr", chr_edit.Text);
+                EditSingleKey((JObject)JsonSource, CurrentScene, CurrentNode.id.ToString(), "chr", chr_edit.Text);
+                File.WriteAllText(DataFilePath, JsonSource.ToString());
+            }
+        }
+
+        private void opt_edit_KeyDown(object sender, KeyEventArgs e)
+        {
+            if(CurrentNode.opt==null)
+                return;
+            if (e.KeyCode == Keys.Enter)
+            {
+                if (opt_edit.Text == "")
+                {
+                    Method.Error("选项节点禁止为空！！！");
+                    return;
+                }
+                opt_edit.Text = opt_edit.Text.Replace("\n", "");
+                EditObject((JObject)JsonSource, CurrentScene, CurrentNode.id.ToString(), "opt",CurrentNode.opt,opt_edit.Text);
                 File.WriteAllText(DataFilePath, JsonSource.ToString());
             }
         }

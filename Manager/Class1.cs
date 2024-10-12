@@ -34,8 +34,8 @@ namespace DialogSystem
         public string chr = null;
         public string txt = null;
         public string next = null;
-        public JObject opt = null;
-        public JObject act = null;
+        public string opt = null;
+        public string act = null;
         public string scene = null;
         NodeType _type;
         public NodeType NodeType
@@ -69,6 +69,17 @@ namespace DialogSystem
     }
     public static class Method
     {
+        public static string GetRandomString(int length)
+        {
+            Random random = new Random();
+            StringBuilder stringBuilder = new StringBuilder(length);
+            for (int i = 0; i < length; i++)
+            {
+                char asciiChar = (char)(random.Next(32, 127)); // 32 到 126 是可打印的 ASCII 范围
+                stringBuilder.Append(asciiChar);
+            }
+            return stringBuilder.ToString();
+        }
         public static void Error(object e)
         {
             MessageBox.Show(e.ToString(), "o(TヘTo)", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -76,6 +87,12 @@ namespace DialogSystem
         public static void Inf(object e)
         {
             MessageBox.Show(e.ToString(), "o(=•ェ•=)m", MessageBoxButtons.OK,MessageBoxIcon.Information );
+        }
+        public static bool Warn(object e)
+        {
+            if(MessageBox.Show(e.ToString(), "⚠️", MessageBoxButtons.YesNo, MessageBoxIcon.Warning)==DialogResult.OK)
+                return true;
+            return false;
         }
         public static void Music(string bgm)
         {
