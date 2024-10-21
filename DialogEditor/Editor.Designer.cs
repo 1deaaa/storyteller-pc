@@ -35,6 +35,12 @@ namespace DialogSystem
             this.search_list = new System.Windows.Forms.ListBox();
             this.search = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
+            this.label3 = new System.Windows.Forms.Label();
+            this.cap_edit = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.opt_edit = new System.Windows.Forms.TextBox();
             this.act = new System.Windows.Forms.Button();
             this.opt = new System.Windows.Forms.Button();
             this.txt = new System.Windows.Forms.Label();
@@ -42,12 +48,8 @@ namespace DialogSystem
             this.id = new System.Windows.Forms.Label();
             this.chr_edit = new System.Windows.Forms.TextBox();
             this.txt_edit = new System.Windows.Forms.TextBox();
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.label1 = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
-            this.opt_edit = new System.Windows.Forms.TextBox();
             this.panel1.SuspendLayout();
-            this.panel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.SuspendLayout();
             // 
             // view
@@ -56,9 +58,9 @@ namespace DialogSystem
             this.view.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.view.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.view.Location = new System.Drawing.Point(0, 0);
-            this.view.Margin = new System.Windows.Forms.Padding(2);
+            this.view.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.view.Name = "view";
-            this.view.Size = new System.Drawing.Size(555, 610);
+            this.view.Size = new System.Drawing.Size(740, 762);
             this.view.TabIndex = 0;
             this.view.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.view_AfterSelect);
             // 
@@ -70,10 +72,10 @@ namespace DialogSystem
             this.search_list.ForeColor = System.Drawing.Color.Black;
             this.search_list.FormattingEnabled = true;
             this.search_list.ItemHeight = 27;
-            this.search_list.Location = new System.Drawing.Point(751, 91);
-            this.search_list.Margin = new System.Windows.Forms.Padding(2);
+            this.search_list.Location = new System.Drawing.Point(1001, 114);
+            this.search_list.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.search_list.Name = "search_list";
-            this.search_list.Size = new System.Drawing.Size(308, 513);
+            this.search_list.Size = new System.Drawing.Size(411, 621);
             this.search_list.TabIndex = 2;
             this.search_list.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged_1);
             // 
@@ -81,18 +83,24 @@ namespace DialogSystem
             // 
             this.search.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.search.Font = new System.Drawing.Font("微软雅黑 Light", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.search.Location = new System.Drawing.Point(751, 2);
-            this.search.Margin = new System.Windows.Forms.Padding(2);
+            this.search.Location = new System.Drawing.Point(1001, 2);
+            this.search.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.search.Multiline = true;
             this.search.Name = "search";
             this.search.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.search.Size = new System.Drawing.Size(308, 80);
+            this.search.Size = new System.Drawing.Size(411, 100);
             this.search.TabIndex = 1;
             this.search.TextChanged += new System.EventHandler(this.textBox1_TextChanged_1);
             // 
             // panel1
             // 
             this.panel1.BackColor = System.Drawing.Color.LightSkyBlue;
+            this.panel1.Controls.Add(this.numericUpDown1);
+            this.panel1.Controls.Add(this.label3);
+            this.panel1.Controls.Add(this.cap_edit);
+            this.panel1.Controls.Add(this.label2);
+            this.panel1.Controls.Add(this.label1);
+            this.panel1.Controls.Add(this.opt_edit);
             this.panel1.Controls.Add(this.act);
             this.panel1.Controls.Add(this.opt);
             this.panel1.Controls.Add(this.txt);
@@ -101,21 +109,88 @@ namespace DialogSystem
             this.panel1.Controls.Add(this.chr_edit);
             this.panel1.Controls.Add(this.txt_edit);
             this.panel1.Font = new System.Drawing.Font("微软雅黑 Light", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.panel1.Location = new System.Drawing.Point(559, 0);
-            this.panel1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panel1.Location = new System.Drawing.Point(745, 0);
+            this.panel1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(188, 382);
+            this.panel1.Size = new System.Drawing.Size(251, 762);
             this.panel1.TabIndex = 3;
+            // 
+            // numericUpDown1
+            // 
+            this.numericUpDown1.Location = new System.Drawing.Point(8, 609);
+            this.numericUpDown1.Maximum = new decimal(new int[] {
+            9999,
+            0,
+            0,
+            0});
+            this.numericUpDown1.Name = "numericUpDown1";
+            this.numericUpDown1.Size = new System.Drawing.Size(237, 31);
+            this.numericUpDown1.TabIndex = 16;
+            this.numericUpDown1.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.numericUpDown1.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
+            // 
+            // label3
+            // 
+            this.label3.Font = new System.Drawing.Font("微软雅黑 Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label3.Location = new System.Drawing.Point(1, 582);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(251, 24);
+            this.label3.TabIndex = 15;
+            this.label3.Text = "剧情进度";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // cap_edit
+            // 
+            this.cap_edit.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.cap_edit.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.cap_edit.Location = new System.Drawing.Point(10, 545);
+            this.cap_edit.Margin = new System.Windows.Forms.Padding(11, 10, 11, 10);
+            this.cap_edit.Name = "cap_edit";
+            this.cap_edit.Size = new System.Drawing.Size(235, 27);
+            this.cap_edit.TabIndex = 14;
+            this.cap_edit.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // label2
+            // 
+            this.label2.Font = new System.Drawing.Font("微软雅黑 Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label2.Location = new System.Drawing.Point(3, 511);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(251, 24);
+            this.label2.TabIndex = 13;
+            this.label2.Text = "任务提示";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // label1
+            // 
+            this.label1.Font = new System.Drawing.Font("微软雅黑 Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label1.Location = new System.Drawing.Point(1, 440);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(251, 24);
+            this.label1.TabIndex = 12;
+            this.label1.Text = "选项名字";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // opt_edit
+            // 
+            this.opt_edit.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.opt_edit.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.opt_edit.Location = new System.Drawing.Point(9, 474);
+            this.opt_edit.Margin = new System.Windows.Forms.Padding(11, 10, 11, 10);
+            this.opt_edit.Name = "opt_edit";
+            this.opt_edit.Size = new System.Drawing.Size(235, 27);
+            this.opt_edit.TabIndex = 9;
+            this.opt_edit.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.opt_edit.KeyDown += new System.Windows.Forms.KeyEventHandler(this.opt_edit_KeyDown);
             // 
             // act
             // 
             this.act.BackColor = System.Drawing.Color.Orange;
             this.act.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.act.Font = new System.Drawing.Font("微软雅黑 Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.act.Location = new System.Drawing.Point(5, 338);
-            this.act.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.act.Location = new System.Drawing.Point(8, 697);
+            this.act.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.act.Name = "act";
-            this.act.Size = new System.Drawing.Size(178, 38);
+            this.act.Size = new System.Drawing.Size(237, 54);
             this.act.TabIndex = 11;
             this.act.Text = "创建行为节点";
             this.act.UseVisualStyleBackColor = false;
@@ -126,10 +201,10 @@ namespace DialogSystem
             this.opt.BackColor = System.Drawing.Color.LimeGreen;
             this.opt.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.opt.Font = new System.Drawing.Font("微软雅黑 Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.opt.Location = new System.Drawing.Point(5, 296);
-            this.opt.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.opt.Location = new System.Drawing.Point(8, 645);
+            this.opt.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.opt.Name = "opt";
-            this.opt.Size = new System.Drawing.Size(178, 38);
+            this.opt.Size = new System.Drawing.Size(237, 48);
             this.opt.TabIndex = 10;
             this.opt.Text = "创建选项节点";
             this.opt.UseVisualStyleBackColor = false;
@@ -138,10 +213,9 @@ namespace DialogSystem
             // txt
             // 
             this.txt.Font = new System.Drawing.Font("微软雅黑 Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.txt.Location = new System.Drawing.Point(0, 70);
-            this.txt.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.txt.Location = new System.Drawing.Point(0, 88);
             this.txt.Name = "txt";
-            this.txt.Size = new System.Drawing.Size(188, 19);
+            this.txt.Size = new System.Drawing.Size(251, 24);
             this.txt.TabIndex = 8;
             this.txt.Text = "文本";
             this.txt.TextAlign = System.Drawing.ContentAlignment.TopCenter;
@@ -149,10 +223,9 @@ namespace DialogSystem
             // chr
             // 
             this.chr.Font = new System.Drawing.Font("微软雅黑 Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.chr.Location = new System.Drawing.Point(0, 19);
-            this.chr.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.chr.Location = new System.Drawing.Point(0, 24);
             this.chr.Name = "chr";
-            this.chr.Size = new System.Drawing.Size(188, 19);
+            this.chr.Size = new System.Drawing.Size(251, 24);
             this.chr.TabIndex = 7;
             this.chr.Text = "角色";
             this.chr.TextAlign = System.Drawing.ContentAlignment.TopCenter;
@@ -160,24 +233,25 @@ namespace DialogSystem
             // id
             // 
             this.id.Dock = System.Windows.Forms.DockStyle.Top;
-            this.id.Font = new System.Drawing.Font("微软雅黑 Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.id.Font = new System.Drawing.Font("Showcard Gothic", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.id.ForeColor = System.Drawing.Color.White;
             this.id.Location = new System.Drawing.Point(0, 0);
-            this.id.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.id.Name = "id";
-            this.id.Size = new System.Drawing.Size(188, 19);
+            this.id.Size = new System.Drawing.Size(251, 24);
             this.id.TabIndex = 6;
             this.id.Text = "所属对话ID";
             this.id.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.id.Click += new System.EventHandler(this.id_Click);
             // 
             // chr_edit
             // 
             this.chr_edit.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.chr_edit.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.chr_edit.ForeColor = System.Drawing.Color.Salmon;
-            this.chr_edit.Location = new System.Drawing.Point(5, 46);
-            this.chr_edit.Margin = new System.Windows.Forms.Padding(8, 8, 8, 8);
+            this.chr_edit.Location = new System.Drawing.Point(7, 58);
+            this.chr_edit.Margin = new System.Windows.Forms.Padding(11, 10, 11, 10);
             this.chr_edit.Name = "chr_edit";
-            this.chr_edit.Size = new System.Drawing.Size(178, 27);
+            this.chr_edit.Size = new System.Drawing.Size(237, 27);
             this.chr_edit.TabIndex = 5;
             this.chr_edit.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.chr_edit.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
@@ -188,85 +262,36 @@ namespace DialogSystem
             this.txt_edit.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.txt_edit.Font = new System.Drawing.Font("微软雅黑", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.txt_edit.ForeColor = System.Drawing.Color.BlueViolet;
-            this.txt_edit.Location = new System.Drawing.Point(2, 98);
-            this.txt_edit.Margin = new System.Windows.Forms.Padding(2);
+            this.txt_edit.Location = new System.Drawing.Point(3, 122);
+            this.txt_edit.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txt_edit.Multiline = true;
             this.txt_edit.Name = "txt_edit";
             this.txt_edit.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txt_edit.Size = new System.Drawing.Size(185, 193);
+            this.txt_edit.Size = new System.Drawing.Size(247, 241);
             this.txt_edit.TabIndex = 4;
             this.txt_edit.TextChanged += new System.EventHandler(this.txt_edit_TextChanged);
             this.txt_edit.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txt_edit_KeyDown);
             // 
-            // panel2
-            // 
-            this.panel2.BackColor = System.Drawing.Color.Aquamarine;
-            this.panel2.Controls.Add(this.label1);
-            this.panel2.Controls.Add(this.button1);
-            this.panel2.Controls.Add(this.opt_edit);
-            this.panel2.Location = new System.Drawing.Point(559, 403);
-            this.panel2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(188, 206);
-            this.panel2.TabIndex = 4;
-            // 
-            // label1
-            // 
-            this.label1.Font = new System.Drawing.Font("微软雅黑 Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label1.Location = new System.Drawing.Point(-4, 10);
-            this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(188, 19);
-            this.label1.TabIndex = 12;
-            this.label1.Text = "选项名字";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            // 
-            // button1
-            // 
-            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button1.Font = new System.Drawing.Font("微软雅黑 Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.button1.Location = new System.Drawing.Point(4, 69);
-            this.button1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(179, 38);
-            this.button1.TabIndex = 11;
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // opt_edit
-            // 
-            this.opt_edit.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.opt_edit.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.opt_edit.Location = new System.Drawing.Point(5, 37);
-            this.opt_edit.Margin = new System.Windows.Forms.Padding(8, 8, 8, 8);
-            this.opt_edit.Name = "opt_edit";
-            this.opt_edit.Size = new System.Drawing.Size(176, 27);
-            this.opt_edit.TabIndex = 9;
-            this.opt_edit.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.opt_edit.KeyDown += new System.Windows.Forms.KeyEventHandler(this.opt_edit_KeyDown);
-            // 
             // Editor
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.GhostWhite;
-            this.ClientSize = new System.Drawing.Size(1066, 610);
-            this.Controls.Add(this.panel2);
+            this.ClientSize = new System.Drawing.Size(1421, 762);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.search_list);
             this.Controls.Add(this.search);
             this.Controls.Add(this.view);
             this.ForeColor = System.Drawing.Color.Black;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Margin = new System.Windows.Forms.Padding(2);
+            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "Editor";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load_1);
             this.SizeChanged += new System.EventHandler(this.Form1_SizeChanged);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
-            this.panel2.ResumeLayout(false);
-            this.panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -281,12 +306,14 @@ namespace DialogSystem
         private TextBox chr_edit;
         private Label id;
         private Label chr;
-        private Panel panel2;
         private TextBox opt_edit;
         private Button opt;
-        private Button button1;
         private Button act;
         private Label txt;
         private Label label1;
+        private Label label3;
+        private TextBox cap_edit;
+        private Label label2;
+        private NumericUpDown numericUpDown1;
     }
 }

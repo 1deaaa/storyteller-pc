@@ -55,6 +55,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\NewFile.cs">
+      <Link>NewFile.cs</Link>
+    </Compile>
     <Compile Include="Test.cs">
       <SubType>Form</SubType>
     </Compile>

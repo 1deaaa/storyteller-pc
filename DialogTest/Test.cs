@@ -93,7 +93,11 @@ namespace DialogSystem
             RestOfGroupMember.Clear();
             RestOfGroupMember.Add(Scene.Count);
             DepthCurrent= 0;
-            CurrentObj = (JObject)Scene.Properties().First().Value;//获取场景下的第一个对话对象
+            foreach (var i in Scene.Properties())
+            {
+                if(i.Value.Type==JTokenType.Object)
+                    CurrentObj = (JObject)i.Value;
+            }//获取场景下的第一个对话对象
     }
 
         private static void FakeBtnClick(object s, EventArgs e)//空选项 点了没用等于继续对话
@@ -118,6 +122,7 @@ namespace DialogSystem
             try
             {
                 CurrentObj = (JObject)CurrentGroup.Properties().First().Value;
+                
             }
             catch(Exception error)
             {

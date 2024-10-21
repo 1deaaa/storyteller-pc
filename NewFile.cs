@@ -1,0 +1,1 @@
+sceneNode.scene = scene[cap]?.ToString() ?? "默认值";

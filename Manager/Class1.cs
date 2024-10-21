@@ -37,6 +37,8 @@ namespace DialogSystem
         public string opt = null;
         public string act = null;
         public string scene = null;
+        public string scene_cap=null;
+        public string scene_pgrs=null;
         NodeType _type;
         public NodeType NodeType
         {

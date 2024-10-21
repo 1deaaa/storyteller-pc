@@ -147,6 +147,8 @@ namespace DialogSystem
                 sceneNode.NodeType = NodeType.Scene;
                 sceneNode.Text = scene.Name;
                 CurrentScene = scene.Name;
+                sceneNode.scene_cap=scene["cap"]?.ToString();
+                sceneNode.scene_pgrs= scene["pgrs"]?.ToString();
                 treeView.Nodes.Add(sceneNode);
                 AddNodeToParent(sceneNode, (JObject)scene.Value);
             }
@@ -407,6 +409,17 @@ namespace DialogSystem
                 EditObject((JObject)JsonSource, CurrentScene, CurrentNode.id.ToString(), "opt",CurrentNode.opt,opt_edit.Text);
                 File.WriteAllText(DataFilePath, JsonSource.ToString());
             }
+        }
+
+        private void id_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        {
+            if(CurrentNode.scene_cap!=null)
+                CurrentNode.scene_cap=numericUpDown1.Value.ToString();
         }
     }
 }
