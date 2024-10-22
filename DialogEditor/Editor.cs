@@ -147,8 +147,10 @@ namespace DialogSystem
                 sceneNode.NodeType = NodeType.Scene;
                 sceneNode.Text = scene.Name;
                 CurrentScene = scene.Name;
-                sceneNode.scene_cap=scene["cap"]?.ToString();
-                sceneNode.scene_pgrs= scene["pgrs"]?.ToString();
+                sceneNode.scene_cap=scene.Value["cap"]?.ToString();
+                cap_edit.Text = sceneNode.scene_cap;
+                sceneNode.scene_pgrs= scene.Value["pgrs"]?.ToString();
+                pgrs_slc.Value = Convert.ToInt32(sceneNode.scene_pgrs);
                 treeView.Nodes.Add(sceneNode);
                 AddNodeToParent(sceneNode, (JObject)scene.Value);
             }
@@ -242,6 +244,8 @@ namespace DialogSystem
             chr_edit.Text= CurrentNode.chr;
             txt_edit.Text = CurrentNode.txt;
             opt_edit.Text = CurrentNode.opt;
+            cap_edit.Text = CurrentNode.scene_cap;
+            pgrs_slc.Value = Convert.ToInt32(CurrentNode.scene_pgrs);
             CurrentScene= CurrentNode.scene;
         }
 
@@ -301,12 +305,12 @@ namespace DialogSystem
             }
             if (_is_root)
             {
-                _is_root = false;//标记下次进入场景层遍历
-                foreach (var prop in ((JObject)obj[scene]).Properties())
+                _is_root = false;//最外层就有选项
+                foreach (var prop in ((JObject)obj[scene]).Properties())//第一层也就是主线对话 需要直接处理
                 {
                     if(prop.Name==dialogID)
                     {
-                        JObject _j=(JObject)prop.Value;
+                        JObject _j=(JObject)prop.Value;   
                         _j[keyType] = newValue;
                         prop.Value = _j;
                         return;
@@ -319,7 +323,7 @@ namespace DialogSystem
             }
             else
             {
-                foreach (var prop in obj.Properties())//已经进入场景层
+                foreach (var prop in obj.Properties())//已经进入内层
                 {
                     if (prop.Value.Type == JTokenType.Object)
                     {
@@ -328,7 +332,7 @@ namespace DialogSystem
                 }
             }
         }
-        public static void EditObject(JObject obj, string scene, string dialogID, string keyType, string keyName, JToken newKeyName, bool _is_root = true)
+        public static void EditOptObject(JObject obj, string scene, string dialogID, string keyType, string keyName, JToken newKeyName, bool _is_root = true)
         {
             if (obj.TryGetValue(dialogID, out JToken token))
             {
@@ -343,23 +347,23 @@ namespace DialogSystem
                 obj[dialogID][keyType] = newKeyName;
                 return;
             }
-            if (_is_root)
+            if (_is_root)//最外层就有选项
             {
-                _is_root = false;//标记下次进入场景层遍历
-                foreach (var prop in ((JObject)obj[scene]).Properties())
+                _is_root = false;//标记下次进入内层遍历
+                foreach (var prop in ((JObject)obj[scene]).Properties())//第一层也就是主线对话 需要直接处理
                 {
-                    if (prop.Name == dialogID)
+                    if (prop.Name == dialogID)//选项改名
                     {
                         JObject _j = (JObject)prop.Value[keyType];
                         JObject _t= (JObject)_j[keyName];
                         _j.Remove(keyName);
                         _j.Add(newKeyName.ToString(), _t);
-                        prop.Value = _j;
+                        prop.Value[keyType] = _j;
                         return;
                     }
                     if (prop.Value.Type == JTokenType.Object)
                     {
-                        EditObject((JObject)prop.Value, scene, dialogID, keyType, keyName,newKeyName, _is_root);
+                        EditOptObject((JObject)prop.Value, scene, dialogID, keyType, keyName,newKeyName, _is_root);
                     }
                 }
             }
@@ -369,7 +373,7 @@ namespace DialogSystem
                 {
                     if (prop.Value.Type == JTokenType.Object)
                     {
-                        EditObject((JObject)prop.Value, scene, dialogID, keyType, keyName, newKeyName, _is_root);
+                        EditOptObject((JObject)prop.Value, scene, dialogID, keyType, keyName, newKeyName, _is_root);
                     }
                 }
             }
@@ -388,7 +392,7 @@ namespace DialogSystem
                 }
                 chr_edit.Text = chr_edit.Text.Replace("\n", "");
                 CurrentNode.chr = chr_edit.Text;
-                CurrentNode.Text = Map.ChrMap[int.Parse(CurrentNode.chr)] + "：" + CurrentNode.chr;
+                CurrentNode.Text = Map.ChrMap[int.Parse(CurrentNode.chr)] + "：" + CurrentNode.txt;
                 EditSingleKey((JObject)JsonSource, CurrentScene, CurrentNode.id.ToString(), "chr", chr_edit.Text);
                 File.WriteAllText(DataFilePath, JsonSource.ToString());
             }
@@ -405,8 +409,9 @@ namespace DialogSystem
                     Method.Error("选项节点禁止为空！！！");
                     return;
                 }
-                opt_edit.Text = opt_edit.Text.Replace("\n", "");
-                EditObject((JObject)JsonSource, CurrentScene, CurrentNode.id.ToString(), "opt",CurrentNode.opt,opt_edit.Text);
+                CurrentNode.Text = opt_edit.Text;
+                EditOptObject((JObject)JsonSource, CurrentScene, CurrentNode.id.ToString(), "opt",CurrentNode.opt,opt_edit.Text);
+                CurrentNode.opt= opt_edit.Text;
                 File.WriteAllText(DataFilePath, JsonSource.ToString());
             }
         }
@@ -418,8 +423,20 @@ namespace DialogSystem
 
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
-            if(CurrentNode.scene_cap!=null)
-                CurrentNode.scene_cap=numericUpDown1.Value.ToString();
+            if (CurrentNode == null)
+                return;
+            else if (CurrentNode.scene_pgrs == null)
+            {
+                if(pgrs_slc.Value!=0)
+                    Method.Error("只能在场景节点设置进度！");
+                return;
+            }
+            CurrentNode.scene_pgrs=pgrs_slc.Value.ToString();
+        }
+
+        private void opt_edit_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

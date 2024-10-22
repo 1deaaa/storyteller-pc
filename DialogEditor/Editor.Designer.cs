@@ -35,7 +35,7 @@ namespace DialogSystem
             this.search_list = new System.Windows.Forms.ListBox();
             this.search = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
+            this.pgrs_slc = new System.Windows.Forms.NumericUpDown();
             this.label3 = new System.Windows.Forms.Label();
             this.cap_edit = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -48,8 +48,9 @@ namespace DialogSystem
             this.id = new System.Windows.Forms.Label();
             this.chr_edit = new System.Windows.Forms.TextBox();
             this.txt_edit = new System.Windows.Forms.TextBox();
+            this.dia = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pgrs_slc)).BeginInit();
             this.SuspendLayout();
             // 
             // view
@@ -95,7 +96,8 @@ namespace DialogSystem
             // panel1
             // 
             this.panel1.BackColor = System.Drawing.Color.LightSkyBlue;
-            this.panel1.Controls.Add(this.numericUpDown1);
+            this.panel1.Controls.Add(this.dia);
+            this.panel1.Controls.Add(this.pgrs_slc);
             this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.cap_edit);
             this.panel1.Controls.Add(this.label2);
@@ -115,24 +117,24 @@ namespace DialogSystem
             this.panel1.Size = new System.Drawing.Size(251, 762);
             this.panel1.TabIndex = 3;
             // 
-            // numericUpDown1
+            // pgrs_slc
             // 
-            this.numericUpDown1.Location = new System.Drawing.Point(8, 609);
-            this.numericUpDown1.Maximum = new decimal(new int[] {
+            this.pgrs_slc.Location = new System.Drawing.Point(7, 530);
+            this.pgrs_slc.Maximum = new decimal(new int[] {
             9999,
             0,
             0,
             0});
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(237, 31);
-            this.numericUpDown1.TabIndex = 16;
-            this.numericUpDown1.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.numericUpDown1.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
+            this.pgrs_slc.Name = "pgrs_slc";
+            this.pgrs_slc.Size = new System.Drawing.Size(237, 31);
+            this.pgrs_slc.TabIndex = 16;
+            this.pgrs_slc.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.pgrs_slc.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
             // 
             // label3
             // 
             this.label3.Font = new System.Drawing.Font("微软雅黑 Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label3.Location = new System.Drawing.Point(1, 582);
+            this.label3.Location = new System.Drawing.Point(0, 503);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(251, 24);
             this.label3.TabIndex = 15;
@@ -142,18 +144,18 @@ namespace DialogSystem
             // cap_edit
             // 
             this.cap_edit.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.cap_edit.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.cap_edit.Location = new System.Drawing.Point(10, 545);
+            this.cap_edit.Font = new System.Drawing.Font("微软雅黑 Light", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.cap_edit.Location = new System.Drawing.Point(5, 470);
             this.cap_edit.Margin = new System.Windows.Forms.Padding(11, 10, 11, 10);
             this.cap_edit.Name = "cap_edit";
-            this.cap_edit.Size = new System.Drawing.Size(235, 27);
+            this.cap_edit.Size = new System.Drawing.Size(235, 23);
             this.cap_edit.TabIndex = 14;
             this.cap_edit.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // label2
             // 
             this.label2.Font = new System.Drawing.Font("微软雅黑 Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label2.Location = new System.Drawing.Point(3, 511);
+            this.label2.Location = new System.Drawing.Point(0, 436);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(251, 24);
             this.label2.TabIndex = 13;
@@ -163,7 +165,7 @@ namespace DialogSystem
             // label1
             // 
             this.label1.Font = new System.Drawing.Font("微软雅黑 Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label1.Location = new System.Drawing.Point(1, 440);
+            this.label1.Location = new System.Drawing.Point(-2, 365);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(251, 24);
             this.label1.TabIndex = 12;
@@ -173,13 +175,14 @@ namespace DialogSystem
             // opt_edit
             // 
             this.opt_edit.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.opt_edit.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.opt_edit.Location = new System.Drawing.Point(9, 474);
+            this.opt_edit.Font = new System.Drawing.Font("微软雅黑 Light", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.opt_edit.Location = new System.Drawing.Point(7, 399);
             this.opt_edit.Margin = new System.Windows.Forms.Padding(11, 10, 11, 10);
             this.opt_edit.Name = "opt_edit";
-            this.opt_edit.Size = new System.Drawing.Size(235, 27);
+            this.opt_edit.Size = new System.Drawing.Size(235, 23);
             this.opt_edit.TabIndex = 9;
             this.opt_edit.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.opt_edit.TextChanged += new System.EventHandler(this.opt_edit_TextChanged);
             this.opt_edit.KeyDown += new System.Windows.Forms.KeyEventHandler(this.opt_edit_KeyDown);
             // 
             // act
@@ -187,7 +190,7 @@ namespace DialogSystem
             this.act.BackColor = System.Drawing.Color.Orange;
             this.act.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.act.Font = new System.Drawing.Font("微软雅黑 Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.act.Location = new System.Drawing.Point(8, 697);
+            this.act.Location = new System.Drawing.Point(5, 697);
             this.act.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.act.Name = "act";
             this.act.Size = new System.Drawing.Size(237, 54);
@@ -201,7 +204,7 @@ namespace DialogSystem
             this.opt.BackColor = System.Drawing.Color.LimeGreen;
             this.opt.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.opt.Font = new System.Drawing.Font("微软雅黑 Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.opt.Location = new System.Drawing.Point(8, 645);
+            this.opt.Location = new System.Drawing.Point(5, 645);
             this.opt.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.opt.Name = "opt";
             this.opt.Size = new System.Drawing.Size(237, 48);
@@ -233,7 +236,7 @@ namespace DialogSystem
             // id
             // 
             this.id.Dock = System.Windows.Forms.DockStyle.Top;
-            this.id.Font = new System.Drawing.Font("Showcard Gothic", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.id.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.id.ForeColor = System.Drawing.Color.White;
             this.id.Location = new System.Drawing.Point(0, 0);
             this.id.Name = "id";
@@ -272,6 +275,19 @@ namespace DialogSystem
             this.txt_edit.TextChanged += new System.EventHandler(this.txt_edit_TextChanged);
             this.txt_edit.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txt_edit_KeyDown);
             // 
+            // dia
+            // 
+            this.dia.BackColor = System.Drawing.Color.CornflowerBlue;
+            this.dia.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.dia.Font = new System.Drawing.Font("微软雅黑 Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.dia.Location = new System.Drawing.Point(5, 593);
+            this.dia.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.dia.Name = "dia";
+            this.dia.Size = new System.Drawing.Size(237, 48);
+            this.dia.TabIndex = 17;
+            this.dia.Text = "创建新对话";
+            this.dia.UseVisualStyleBackColor = false;
+            // 
             // Editor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
@@ -291,7 +307,7 @@ namespace DialogSystem
             this.SizeChanged += new System.EventHandler(this.Form1_SizeChanged);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pgrs_slc)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -314,6 +330,7 @@ namespace DialogSystem
         private Label label3;
         private TextBox cap_edit;
         private Label label2;
-        private NumericUpDown numericUpDown1;
+        private NumericUpDown pgrs_slc;
+        private Button dia;
     }
 }
