@@ -31,6 +31,7 @@
             this.txt = new System.Windows.Forms.Label();
             this.spk = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.cap = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // txt
@@ -71,12 +72,26 @@
             this.label1.Text = "↑调试信息";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // cap
+            // 
+            this.cap.BackColor = System.Drawing.Color.PaleTurquoise;
+            this.cap.Font = new System.Drawing.Font("微软雅黑 Light", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.cap.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
+            this.cap.Location = new System.Drawing.Point(396, 457);
+            this.cap.Name = "cap";
+            this.cap.Size = new System.Drawing.Size(279, 38);
+            this.cap.TabIndex = 3;
+            this.cap.Text = "任务提示";
+            this.cap.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.cap.Click += new System.EventHandler(this.label2_Click);
+            // 
             // MainUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(1075, 619);
+            this.Controls.Add(this.cap);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.spk);
             this.Controls.Add(this.txt);
@@ -92,6 +107,7 @@
         public System.Windows.Forms.Label txt;
         public System.Windows.Forms.Label spk;
         public System.Windows.Forms.Label label1;
+        public System.Windows.Forms.Label cap;
     }
 }
 
