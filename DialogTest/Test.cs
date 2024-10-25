@@ -45,8 +45,8 @@ namespace DialogSystem
     {
         //对于vs调试显示的json数据 外层都被加了一组{} 实际上是不存在的
         public static int Choice = 0;//注意 从1开始！！！
-        public static int CurrentMainObjID = 0;//目前遍历到的主线对话对象
-        static JArray CurrentGroup;
+        public static int CurrentGroupObjIndex = 0;//目前遍历到的组内对话对象
+        static JArray CurrentDialogArray;
         public static JObject CurrentObj;//目前遍历到的对话对象
         public static List<JObject> MainObj = new();//每个场景下的主线对话对象 默认下一组就是如此
         static bool IsChoice = false;
@@ -54,9 +54,6 @@ namespace DialogSystem
         static int RestOfGroupMember = 0;//数组/对象内的剩余成员数 用于确定是否要跳出内层 #目前假定分支末端只会跳转到主线/使用next跳转至场景
         static string NextDialog = "";//指定next所指向的下一个对话场景 为空表示不跳转
         static List<ChoiceBtn> branch_btns = new();
-        public delegate void ActionHandler();
-        public static Dictionary<string, ActionHandler> ActMap;
-        public static Dictionary<int, string> ChrMap;
         public static bool DialogEnabled = true;
         public static JToken DialogScene;
         static void Debug(object t)
@@ -68,30 +65,11 @@ namespace DialogSystem
             //??=如果为null才赋值 防止重复赋值
             DialogScene = MainUI.JsonSource[_scene];//根（场景）键值对的值为数组  Token代表任意数据节点 Prop代表键值对 Object代表{xxx}
             MainObj.Clear();
-            CurrentMainObjID = 0;
+            CurrentGroupObjIndex = 0;
             NextDialog = "";
             IsChoice = false;
             RestOfGroupMember = 0;
-            foreach (JObject obj in DialogScene["dia"])
-            {
-
-            }
-            CurrentObj = MainObj[0];
-            ActMap ??= new Dictionary<string, ActionHandler>
-            {
-                    #region 行为映射表
-                //绑定所有指令和函数
-                    {"动作",Method.Animate }
-                    #endregion 行为映射表
-            };
-            ChrMap ??= new Dictionary<int, string>()
-            {
-                    #region 角色映射表
-                    {0,"我" },
-                    {1,"..." },
-                    { 2,"可可酱"}
-                    #endregion 角色映射表
-            };
+            CurrentObj = (JObject)CurrentDialogArray[0];
         }
 
         private static void FakeBtnClick(object s, EventArgs e)//空选项 点了没用等于继续对话
@@ -111,25 +89,18 @@ namespace DialogSystem
             //
             Program.UI.Text = "选择了选项" + Choice.ToString();
             //
-            CurrentGroup = (JArray)CurrentObj[clicked_btn.Text];//根据选项定位
-            RestOfGroupMember = CurrentGroup.Count - 1;//目前已经处理过第一个
-            try
-            {
-                CurrentObj = (JObject)CurrentGroup[0];
-            }
-            catch (Exception error)
-            {
-                Method.Error($"对话数据错误 不要修改游戏文件鸭~\n以下给开发人员看的：{error}");
-                Environment.Exit(1);
-            }
+            CurrentDialogArray = (JArray)CurrentObj[clicked_btn.Text];//根据选项定位新的对话组
+            CurrentObj = (JObject)CurrentDialogArray[0];//进入选项内部对话
             foreach (var i in branch_btns)
                 i.Dispose();//关闭选项
             branch_btns.Clear();
+            RestOfGroupMember = CurrentDialogArray.Count - 1;//本次会处理掉第一个成员
             DisplayOne(CurrentObj, Program.UI);
         }
 
-        public static void DisplayOne(JObject obj, MainUI ui)//传入一个对话对象 每个对话对象的根级必为obj 而深处必只有prop
+        public static void DisplayOne(JObject crt_obj, MainUI ui)//传入一个对话对象 每个对话对象的根级必为obj 而深处必只有prop
         {
+            #region 处理跳转和初始化
             if (EndDialog)
             {
                 End(ui);
@@ -144,12 +115,13 @@ namespace DialogSystem
             }
             IsChoice = false;
             DialogEnabled = true;
-            foreach (JProperty key in obj.Properties())//遍历对象下所有一级子节点键值对
+            #endregion
+            foreach (JProperty key in crt_obj.Properties())//遍历对象下所有一级子节点键值对
             {
                 switch (key.Name)
                 {
                     case "chr":
-                        ui.spk.Text = ChrMap[(int)key.Value];
+                        ui.spk.Text = Map.ChrMap[(int)key.Value];
                         break;
                     case "txt":
                         ui.txt.Text = key.Value.ToString();
@@ -163,8 +135,8 @@ namespace DialogSystem
                                     Method.Music(acts.Value.ToString());
                                     break;
                                 case "fun":
-                                    if (ActMap.ContainsKey(acts.Value.ToString()))
-                                        ActMap[acts.Value.ToString()]();//对应委托
+                                    if (Map.ActMap.ContainsKey(acts.Value.ToString()))
+                                        Map.ActMap[acts.Value.ToString()]();//对应委托
                                     break;
                                 case "brc":
                                     Method.RecordBranch(acts.Value.ToString());
@@ -199,36 +171,17 @@ namespace DialogSystem
                         break;
                 }
             }
-            if (!IsChoice && NextDialog == "" && RestOfGroupMember == 0 && CurrentMainObjID + 1 < MainObj.Count)
-                CurrentObj = MainObj[++CurrentMainObjID];
+            if (!IsChoice && NextDialog == "" && RestOfGroupMember == 0 && CurrentGroupObjIndex + 1 < MainObj.Count)
+                CurrentObj = MainObj[++CurrentGroupObjIndex];
             else if (RestOfGroupMember > 0)
-                CurrentObj = (JObject)CurrentGroup[CurrentGroup.Count - RestOfGroupMember];
-            else if (CurrentMainObjID + 1 >= MainObj.Count && NextDialog == "")
+                CurrentObj = (JObject)CurrentDialogArray[CurrentDialogArray.Count - RestOfGroupMember];
+            else if (CurrentGroupObjIndex + 1 >= MainObj.Count && NextDialog == "")
                 EndDialog = true;
         }
         public static void End(MainUI ui)
         {
             ui.txt.Dispose();
             ui.spk.Dispose();
-        }
-        static class Method
-        {
-            public static void Error(string e)
-            {
-                MessageBox.Show(e, "o(TヘTo)", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            public static void Music(string bgm)
-            {
-                Program.UI.Text = "正在播放" + bgm;
-            }
-            public static void Animate()
-            {
-                Program.UI.Text = "执行到了某个动作";
-            }
-            public static void RecordBranch(string brc)
-            {
-                Program.UI.Text = "已经写入进度：" + brc;
-            }
         }
         class ChoiceBtn : Button
         {
