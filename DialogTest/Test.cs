@@ -41,17 +41,27 @@ namespace DialogSystem
 
         }
     }
+    class DialogGroup
+    {
+        public JArray Array;
+        public int index;
+        public DialogGroup(JArray _array)
+        {
+            Array = _array;
+            index = 0;
+        }
+    }
     static class Dialog
     {
         //对于vs调试显示的json数据 外层都被加了一组{} 实际上是不存在的
         public static int Choice = 0;//注意 从1开始！！！
         public static int CurrentGroupObjIndex = 0;//目前遍历到的组内对话对象
-        static JArray CurrentDialogArray;
+        static Stack<DialogGroup> CurrentDialogArray=new();
         public static JObject CurrentObj;//目前遍历到的对话对象
         public static List<JObject> MainObj = new();//每个场景下的主线对话对象 默认下一组就是如此
         static bool IsChoice = false;
         public static bool EndDialog = false;//下一次点击直接关闭对话
-        static int RestOfGroupMember = 0;//数组/对象内的剩余成员数 用于确定是否要跳出内层 #目前假定分支末端只会跳转到主线/使用next跳转至场景
+        static int RestOfCrtGrpMbr = 0;//数组/对象内的剩余成员数 用于确定是否要跳出内层
         static string NextDialog = "";//指定next所指向的下一个对话场景 为空表示不跳转
         static List<ChoiceBtn> branch_btns = new();
         public static bool DialogEnabled = true;
@@ -68,8 +78,9 @@ namespace DialogSystem
             CurrentGroupObjIndex = 0;
             NextDialog = "";
             IsChoice = false;
-            RestOfGroupMember = 0;
-            CurrentObj = (JObject)CurrentDialogArray[0];
+            RestOfCrtGrpMbr = 0;
+            CurrentDialogArray.Push(new DialogGroup((JArray)DialogScene["dia"]));
+            CurrentObj = (JObject)CurrentDialogArray.Peek().Array[0];
         }
 
         private static void FakeBtnClick(object s, EventArgs e)//空选项 点了没用等于继续对话
@@ -89,12 +100,12 @@ namespace DialogSystem
             //
             Program.UI.Text = "选择了选项" + Choice.ToString();
             //
-            CurrentDialogArray = (JArray)CurrentObj[clicked_btn.Text];//根据选项定位新的对话组
-            CurrentObj = (JObject)CurrentDialogArray[0];//进入选项内部对话
+            CurrentDialogArray.Push(new DialogGroup((JArray)CurrentObj[clicked_btn.Text]));//根据选项定位新的对话组
+            CurrentObj = (JObject)CurrentDialogArray.Peek().Array[0];//进入选项内部对话
             foreach (var i in branch_btns)
                 i.Dispose();//关闭选项
             branch_btns.Clear();
-            RestOfGroupMember = CurrentDialogArray.Count - 1;//本次会处理掉第一个成员
+            RestOfCrtGrpMbr = CurrentDialogArray.Peek().Array.Count;
             DisplayOne(CurrentObj, Program.UI);
         }
 
@@ -116,7 +127,7 @@ namespace DialogSystem
             IsChoice = false;
             DialogEnabled = true;
             #endregion
-            foreach (JProperty key in crt_obj.Properties())//遍历对象下所有一级子节点键值对
+            foreach (JProperty key in crt_obj.Properties())//解析一个dia下所有参数
             {
                 switch (key.Name)
                 {
@@ -147,7 +158,7 @@ namespace DialogSystem
                     case "opt":
                         DialogEnabled = false;
                         IsChoice = true;
-                        RestOfGroupMember = 0;
+                        RestOfCrtGrpMbr = 0;
                         CurrentObj = (JObject)CurrentObj["opt"];
                         int i = 1;
                         foreach (JProperty options in key.Value)//"option":[xxx]
@@ -156,12 +167,12 @@ namespace DialogSystem
                             branch_btns.Add(btn);
                             btn.Text = options.Name;
                             btn.Choice = i;
-                            //
+                            #region 界面相关
                             btn.Size = new Size(200, 50);
-                            btn.Location = new Point(ui.Width - 200, 350 + btn.Size.Height * i);
+                            btn.Location = new Point(ui.Width - 200,  btn.Size.Height * i);
                             btn.Click += ChoiceBtn_Click;
                             ui.Controls.Add(btn);
-                            //
+                            #endregion
                             i++;
                         }
                         //按钮点击事件：向深处（子级对象）递归一次
@@ -171,12 +182,23 @@ namespace DialogSystem
                         break;
                 }
             }
-            if (!IsChoice && NextDialog == "" && RestOfGroupMember == 0 && CurrentGroupObjIndex + 1 < MainObj.Count)
-                CurrentObj = MainObj[++CurrentGroupObjIndex];
-            else if (RestOfGroupMember > 0)
-                CurrentObj = (JObject)CurrentDialogArray[CurrentDialogArray.Count - RestOfGroupMember];
-            else if (CurrentGroupObjIndex + 1 >= MainObj.Count && NextDialog == "")
-                EndDialog = true;
+            //解析任务结束 开始定位下一次解析位置
+            if (RestOfCrtGrpMbr == 0)//本层已全部解析完毕
+            {
+                CurrentDialogArray.Pop();
+                CurrentObj=(JObject)CurrentDialogArray.Peek().Array[CurrentDialogArray.Peek().index];
+            }
+            else if(RestOfCrtGrpMbr)
+            {
+                RestOfCrtGrpMbr--;
+
+            }
+            //if (!IsChoice && NextDialog == "" && RestOfGroupMember == 0 && CurrentGroupObjIndex + 1 < MainObj.Count)
+            //    CurrentObj = MainObj[++CurrentGroupObjIndex];
+            //else if (RestOfGroupMember > 0)
+            //    CurrentObj = (JObject)CurrentDialogArray.Peek().array[CurrentDialogArray.Count - RestOfGroupMember];
+            //else if (CurrentGroupObjIndex + 1 >= MainObj.Count && NextDialog == "")
+            //    EndDialog = true;
         }
         public static void End(MainUI ui)
         {
