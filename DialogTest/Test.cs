@@ -54,16 +54,25 @@ namespace DialogSystem
         //对于vs调试显示的json数据 外层都被加了一组{} 实际上是不存在的
         public static int Choice = 0;//注意 从1开始！！！
         public static int CurrentGroupObjIndex = 0;//目前遍历到的组内对话对象
-        static Stack<DialogGroup> CurrentDialogArray=new();
+        static Stack<DialogGroup> DialogArray=new();
         public static JObject CurrentObj;//目前遍历到的对话对象
         public static List<JObject> MainObj = new();//每个场景下的主线对话对象 默认下一组就是如此
         static bool waitForChoice = false;
         public static bool EndDialog = false;//下一次点击直接关闭对话
-        static int RestOfCrtGrpMbr = 0;//数组/对象内的剩余成员数 用于确定是否要跳出内层
         static string NextDialog = null;//指定next所指向的下一个对话场景 为null表示不跳转
         static List<ChoiceBtn> branch_btns = new();
         public static bool DialogEnabled = true;
         public static JToken DialogScene;
+        public static JArray CrtArray
+        {
+            get { return DialogArray.Peek().Array; }
+            set { DialogArray.Peek().Array = value; }
+        }
+        public static int CrtIndex
+        {
+            get { return DialogArray.Peek().NextIndex; }
+            set { DialogArray.Peek().NextIndex = value; }
+        }
         static void Debug(object t)
         {
             MessageBox.Show(t.ToString());
@@ -76,10 +85,9 @@ namespace DialogSystem
             CurrentGroupObjIndex = 0;
             NextDialog = null;
             waitForChoice = false;
-            CurrentDialogArray.Clear();
-            CurrentDialogArray.Push(new DialogGroup((JArray)DialogScene["dia"]));
-            RestOfCrtGrpMbr = CurrentDialogArray.Peek().Array.Count;
-            CurrentObj = (JObject)CurrentDialogArray.Peek().Array[0];
+            DialogArray.Clear();
+            DialogArray.Push(new DialogGroup((JArray)DialogScene["dia"]));
+            CurrentObj = (JObject)CrtArray[0];
         }
 
         private static void FakeBtnClick(object s, EventArgs e)//空选项 点了没用等于继续对话
@@ -99,12 +107,11 @@ namespace DialogSystem
             //
             Program.UI.Text = "选择了选项" + Choice.ToString();
             //
-            CurrentDialogArray.Push(new DialogGroup((JArray)CurrentObj[clicked_btn.Text]));//根据选项定位新的对话组
-            CurrentObj = (JObject)CurrentDialogArray.Peek().Array[0];//进入选项内部对话
+            DialogArray.Push(new DialogGroup((JArray)CurrentObj[clicked_btn.Text]));//根据选项定位新的对话组
+            CurrentObj = (JObject)CrtArray[0];//进入选项内部对话
             foreach (var i in branch_btns)
                 i.Dispose();//关闭选项
             branch_btns.Clear();
-            RestOfCrtGrpMbr = CurrentDialogArray.Peek().Array.Count;
             DisplayOne(CurrentObj, Program.UI);
         }
 
@@ -180,38 +187,42 @@ namespace DialogSystem
                         break;
                 }
             }
-            //解析任务结束 开始定位下一次解析位置
-            if (CurrentDialogArray.Peek().NextIndex < CurrentDialogArray.Peek().Array.Count)
-                CurrentDialogArray.Peek().NextIndex++;
-            if(RestOfCrtGrpMbr > 0)
-                RestOfCrtGrpMbr--;
-            //if (waitForChoice)
-            //    return;
-            if(NextDialog !=null)
+            //解析任务结束 已经显示在屏幕上 开始定位下一次解析位置 所有current皆为下次待解析对象
+            if (CrtIndex < CrtArray.Count)
+                CrtIndex++;
+            if (waitForChoice)
+                return;
+            if (NextDialog !=null)
             {
                 SceneInit(NextDialog);
             }
             
-            if (RestOfCrtGrpMbr == 0)//本层已全部解析完毕
+            if (CrtArray.Count-CrtIndex == 0)//本层已全部解析完毕 退出本层
             {
-                CurrentDialogArray.Pop();
-                if (CurrentDialogArray.Count == 0)//场景所有对话结束
+                while(CrtArray.Count - CrtIndex == 0)
                 {
-                    End(ui);
-                    return;
+                    DialogArray.Pop();
+                    if (DialogArray.Count == 0)//场景所有对话结束
+                    {
+                        EndDialog = true;//下次点击 在事件开头直接退出
+                        return;
+                    }
                 }
-                RestOfCrtGrpMbr= CurrentDialogArray.Peek().Array.Count- CurrentDialogArray.Peek().NextIndex;//计算新层剩余成员数
-                CurrentObj=(JObject)CurrentDialogArray.Peek().Array[CurrentDialogArray.Peek().NextIndex];
-                DisplayOne(CurrentObj,ui);
+                //if (DialogArray.Count == 0)//场景所有对话结束
+                //{
+                //    EndDialog = true;//下次点击 在事件开头直接退出
+                //    return;
+                //}
+                CurrentObj=(JObject)CrtArray[CrtIndex];//切换到外层
             }
-            else if(RestOfCrtGrpMbr > 0)
+            else if(CrtArray.Count - CrtIndex > 0)
             {
-                CurrentObj =(JObject)CurrentDialogArray.Peek().Array[CurrentDialogArray.Peek().NextIndex];
+                CurrentObj =(JObject)CrtArray[CrtIndex];
             }
             //if (!IsChoice && NextDialog == "" && RestOfGroupMember == 0 && CurrentGroupObjIndex + 1 < MainObj.Count)
             //    CurrentObj = MainObj[++CurrentGroupObjIndex];
             //else if (RestOfGroupMember > 0)
-            //    CurrentObj = (JObject)CurrentDialogArray.Peek().array[CurrentDialogArray.Count - RestOfGroupMember];
+            //    CurrentObj = (JObject)CurrentCrtArray[CurrentDialogArray.Count - RestOfGroupMember];
             //else if (CurrentGroupObjIndex + 1 >= MainObj.Count && NextDialog == "")
             //    EndDialog = true;
         }

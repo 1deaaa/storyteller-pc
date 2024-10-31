@@ -95,9 +95,11 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.spk);
             this.Controls.Add(this.txt);
+            this.Location = new System.Drawing.Point(2000, 2000);
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "MainUI";
             this.Text = "MainUI";
+            this.TopMost = true;
             this.Load += new System.EventHandler(this.MainUI_Load);
             this.ResumeLayout(false);
 
