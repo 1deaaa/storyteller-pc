@@ -19,9 +19,7 @@ namespace DialogSystem
         private void txt_Click(object sender, EventArgs e)
         {
             if (!Dialog.DialogEnabled)
-            {
                 return;
-            }
             Dialog.DisplayOne(Dialog.CurrentObj, this);
         }
 
@@ -44,11 +42,11 @@ namespace DialogSystem
     class DialogGroup
     {
         public JArray Array;
-        public int index;
+        public int NextIndex;
         public DialogGroup(JArray _array)
         {
             Array = _array;
-            index = 0;
+            NextIndex = 0;//0才是有效的第一个
         }
     }
     static class Dialog
@@ -59,10 +57,10 @@ namespace DialogSystem
         static Stack<DialogGroup> CurrentDialogArray=new();
         public static JObject CurrentObj;//目前遍历到的对话对象
         public static List<JObject> MainObj = new();//每个场景下的主线对话对象 默认下一组就是如此
-        static bool IsChoice = false;
+        static bool waitForChoice = false;
         public static bool EndDialog = false;//下一次点击直接关闭对话
         static int RestOfCrtGrpMbr = 0;//数组/对象内的剩余成员数 用于确定是否要跳出内层
-        static string NextDialog = "";//指定next所指向的下一个对话场景 为空表示不跳转
+        static string NextDialog = null;//指定next所指向的下一个对话场景 为null表示不跳转
         static List<ChoiceBtn> branch_btns = new();
         public static bool DialogEnabled = true;
         public static JToken DialogScene;
@@ -76,10 +74,11 @@ namespace DialogSystem
             DialogScene = MainUI.JsonSource[_scene];//根（场景）键值对的值为数组  Token代表任意数据节点 Prop代表键值对 Object代表{xxx}
             MainObj.Clear();
             CurrentGroupObjIndex = 0;
-            NextDialog = "";
-            IsChoice = false;
-            RestOfCrtGrpMbr = 0;
+            NextDialog = null;
+            waitForChoice = false;
+            CurrentDialogArray.Clear();
             CurrentDialogArray.Push(new DialogGroup((JArray)DialogScene["dia"]));
+            RestOfCrtGrpMbr = CurrentDialogArray.Peek().Array.Count;
             CurrentObj = (JObject)CurrentDialogArray.Peek().Array[0];
         }
 
@@ -118,13 +117,13 @@ namespace DialogSystem
                 EndDialog = false;
                 return;
             }
-            if (NextDialog != "")
+            if (NextDialog != null)
             {
                 SceneInit(NextDialog);
                 DisplayOne(CurrentObj, Program.UI);
                 return;
             }
-            IsChoice = false;
+            waitForChoice = false;
             DialogEnabled = true;
             #endregion
             foreach (JProperty key in crt_obj.Properties())//解析一个dia下所有参数
@@ -157,8 +156,7 @@ namespace DialogSystem
                         break;
                     case "opt":
                         DialogEnabled = false;
-                        IsChoice = true;
-                        RestOfCrtGrpMbr = 0;
+                        waitForChoice = true;
                         CurrentObj = (JObject)CurrentObj["opt"];
                         int i = 1;
                         foreach (JProperty options in key.Value)//"option":[xxx]
@@ -183,15 +181,32 @@ namespace DialogSystem
                 }
             }
             //解析任务结束 开始定位下一次解析位置
+            if (CurrentDialogArray.Peek().NextIndex < CurrentDialogArray.Peek().Array.Count)
+                CurrentDialogArray.Peek().NextIndex++;
+            if(RestOfCrtGrpMbr > 0)
+                RestOfCrtGrpMbr--;
+            //if (waitForChoice)
+            //    return;
+            if(NextDialog !=null)
+            {
+                SceneInit(NextDialog);
+            }
+            
             if (RestOfCrtGrpMbr == 0)//本层已全部解析完毕
             {
                 CurrentDialogArray.Pop();
-                CurrentObj=(JObject)CurrentDialogArray.Peek().Array[CurrentDialogArray.Peek().index];
+                if (CurrentDialogArray.Count == 0)//场景所有对话结束
+                {
+                    End(ui);
+                    return;
+                }
+                RestOfCrtGrpMbr= CurrentDialogArray.Peek().Array.Count- CurrentDialogArray.Peek().NextIndex;//计算新层剩余成员数
+                CurrentObj=(JObject)CurrentDialogArray.Peek().Array[CurrentDialogArray.Peek().NextIndex];
+                DisplayOne(CurrentObj,ui);
             }
-            else if(RestOfCrtGrpMbr)
+            else if(RestOfCrtGrpMbr > 0)
             {
-                RestOfCrtGrpMbr--;
-
+                CurrentObj =(JObject)CurrentDialogArray.Peek().Array[CurrentDialogArray.Peek().NextIndex];
             }
             //if (!IsChoice && NextDialog == "" && RestOfGroupMember == 0 && CurrentGroupObjIndex + 1 < MainObj.Count)
             //    CurrentObj = MainObj[++CurrentGroupObjIndex];
