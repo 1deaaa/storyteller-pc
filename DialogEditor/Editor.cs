@@ -24,16 +24,12 @@ namespace DialogSystem
         public static string CurrentScene = "";
         public static int CurrentId;
         int _option_id;//记录选项所属父级id
+        #region 搜索和UI相关
         public Editor()
         {
             InitializeComponent();
             CheckForIllegalCrossThreadCalls = false;
             LoadTree();
-        }
-
-        void LoadTree()
-        {
-            AddSceneToTreeView(view, (JObject)JsonSource);
         }
 
         private RichNode FindNodeByText(TreeNodeCollection nodes, string searchText)
@@ -138,116 +134,192 @@ namespace DialogSystem
             search_list.Location = new Point(search.Left, search.Height + 4);
             search_list.Size = new Size(search.Width, Height - 40 - 4);
         }
+        #endregion
 
-        private void AddSceneToTreeView(TreeView treeView, JObject jsonObject)
+        void LoadTree()
         {
-            foreach (var scene in jsonObject.Properties())
-            {
-                RichNode sceneNode = new RichNode();
-                sceneNode.NodeType = NodeType.Scene;
-                sceneNode.Text = scene.Name;
-                CurrentScene = scene.Name;
-                sceneNode.scene_cap=scene.Value["cap"]?.ToString();
-                cap_edit.Text = sceneNode.scene_cap;
-                sceneNode.scene_pgrs= scene.Value["pgrs"]?.ToString();
-                pgrs_slc.Value = Convert.ToInt32(sceneNode.scene_pgrs);
-                treeView.Nodes.Add(sceneNode);
-                AddNodeToParent(sceneNode, (JObject)scene.Value);
-            }
+            //AddSceneToTreeView(view, (JObject)JsonSource);
+            LoadDialogueToTreeView(DataFilePath,view);
         }
+        //private void AddSceneToTreeView(TreeView treeView, JObject jsonObject)
+        //{
+        //    foreach (var scene in jsonObject.Properties())
+        //    {
+        //        RichNode sceneNode = new RichNode();
+        //        sceneNode.NodeType = NodeType.Scene;
+        //        sceneNode.Text = scene.Name;
+        //        CurrentScene = scene.Name;
+        //        sceneNode.scene_cap=scene.Value["cap"]?.ToString();
+        //        cap_edit.Text = sceneNode.scene_cap;
+        //        sceneNode.scene_pgrs= scene.Value["pgrs"]?.ToString();
+        //        pgrs_slc.Value = Convert.ToInt32(sceneNode.scene_pgrs);
+        //        treeView.Nodes.Add(sceneNode);
+        //        AddNodeToParent(sceneNode, (JArray)scene["dia"]);
+        //    }
+        //}
 
-        private void AddNodeToParent(RichNode parentNode, JObject jsonObject)
-        {
-            foreach (var key in jsonObject.Properties())
-            {
-                RichNode node = new RichNode();
-                node.Text = "⏬";//默认文本 当连续选项出现时 没有txt节点设置文本
-                node.scene = CurrentScene;
-                if (key.Value is JObject)//处理分支节点
-                {
-                    //对话ID节点
-                    int _id;
-                    if (int.TryParse(key.Name, out _id) && _id > 100)//所以选项名字严禁纯数字！！！
-                    {
-                        CurrentId = _id;
-                        node.id = CurrentId;
-                        //处理txt时会给节点设置Text
-                    }
-                    //
-                    else
-                    {
-                        node.id=CurrentId;
-                        switch (key.Name)
-                        {
-                            case "opt":
-                                //node.opt = (JObject)key.Value;
-                                node.Text = "✨选项";
-                                node.NodeType=NodeType.OptionRoot;
-                                node.ForeColor = ThemeColor.Option;
-                                break;
-                            case "act":
-                                //node.act = (JObject)key.Value;
-                                node.Text = "⚡行为";
-                                node.NodeType=NodeType.ActionRoot;
-                                node.ForeColor = ThemeColor.Action;
-                                break;
-                            case "brc":
-                                node.Text = "🌿分支";
-                                break;
-                            default:
-                                node.Text = key.Name;//只有可能是选项名字了
-                                node.opt = key.Name;
-                                node.NodeType=NodeType.Option;
-                                node.BackColor = ThemeColor.Option;
-                                break;
-                        }
-                    }
-                       parentNode.Nodes.Add(node);
-                       AddNodeToParent(node, (JObject)key.Value);
-                }
-                else//处理单节点 也就是给父节点贴上属性或者子节点
-                { 
-                    node.id = CurrentId;
-                    switch(key.Name)
-                    {
-                        case "chr":
-                            parentNode.chr=key.Value.ToString();
-                            break;
-                        case "txt":
-                            parentNode.txt=key.Value.ToString();
-                            parentNode.Text=Map.ChrMap[int.Parse(parentNode.chr)]+"："+key.Value.ToString();
-                            break;
-                        case "bgm":
-                            node.Text= "🎵" + key.Value.ToString();
-                            node.BackColor = ThemeColor.Action;
-                            parentNode.Nodes.Add(node);
-                            break;
-                        case "rcd"://记录当前选项
-                            node.Text= "🖊️"+ key.Value.ToString();
-                            node.BackColor = ThemeColor.Action;
-                            parentNode.Nodes.Add(node);
-                            break ;
-                        case "fun":
-                            node.Text = "⚡" + key.Value.ToString();
-                            node.BackColor = ThemeColor.Action;
-                            parentNode.Nodes.Add(node);
-                            break;               
-                    }
-                }
-            }
-        }
+        //private void AddNodeToParent(RichNode parentNode, JArray dlg_arry)
+        //{
+        //    foreach (JObject obj in dlg_arry)
+        //    {
+        //        RichNode node = new RichNode();
+        //        node.Text = "⏬";//默认文本 当连续选项出现时 没有txt节点设置文本
+        //        node.scene = CurrentScene;
+        //        if (obj is JObject)//处理分支节点
+        //        {
+        //            //对话ID节点
+        //            int _id;
+        //            if (int.TryParse(obj["id"].ToString(), out _id) && _id > 100)//所以选项名字严禁纯数字！！！
+        //            {
+        //                CurrentId = _id;
+        //                node.id = CurrentId;
+        //                //处理txt时会给节点设置Text
+
+        //            }
+        //            //
+        //            else
+        //            {
+        //                node.id=CurrentId;
+        //                switch (obj.Value)
+        //                {
+        //                    case "opt":
+        //                        //node.opt = (JObject)key.Value;
+        //                        node.Text = "✨选项";
+        //                        node.NodeType=NodeType.OptionRoot;
+        //                        node.ForeColor = ThemeColor.Option;
+        //                        break;
+        //                    case "act":
+        //                        //node.act = (JObject)key.Value;
+        //                        node.Text = "⚡行为";
+        //                        node.NodeType=NodeType.ActionRoot;
+        //                        node.ForeColor = ThemeColor.Action;
+        //                        break;
+        //                    case "brc":
+        //                        node.Text = "🌿分支";
+        //                        break;
+        //                    default:
+        //                        node.Text = obj.Name;//只有可能是选项名字了
+        //                        node.opt = obj.Name;
+        //                        node.NodeType=NodeType.Option;
+        //                        node.BackColor = ThemeColor.Option;
+        //                        break;
+        //                }
+        //            }
+        //               parentNode.Nodes.Add(node);
+        //               AddNodeToParent(node, (JObject)obj.Value);
+        //        }
+        //        else//处理单节点 也就是给父节点贴上属性或者子节点
+        //        { 
+        //            node.id = CurrentId;
+        //            switch(obj.Name)
+        //            {
+        //                case "chr":
+        //                    parentNode.chr=obj.Value.ToString();
+        //                    break;
+        //                case "txt":
+        //                    parentNode.txt=obj.Value.ToString();
+        //                    parentNode.Text=Map.ChrMap[int.Parse(parentNode.chr)]+"："+obj.Value.ToString();
+        //                    break;
+        //                case "bgm":
+        //                    node.Text= "🎵" + obj.Value.ToString();
+        //                    node.BackColor = ThemeColor.Action;
+        //                    parentNode.Nodes.Add(node);
+        //                    break;
+        //                case "rcd"://记录当前选项
+        //                    node.Text= "🖊️"+ obj.Value.ToString();
+        //                    node.BackColor = ThemeColor.Action;
+        //                    parentNode.Nodes.Add(node);
+        //                    break ;
+        //                case "fun":
+        //                    node.Text = "⚡" + obj.Value.ToString();
+        //                    node.BackColor = ThemeColor.Action;
+        //                    parentNode.Nodes.Add(node);
+        //                    break;               
+        //            }
+        //        }
+        //    }
+        //}
 
         private void view_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            CurrentNode=e.Node as RichNode;
-            id.Text = "ID：" + CurrentNode.id.ToString();
-            chr_edit.Text= CurrentNode.chr;
-            txt_edit.Text = CurrentNode.txt;
-            opt_edit.Text = CurrentNode.opt;
-            cap_edit.Text = CurrentNode.scene_cap;
-            pgrs_slc.Value = Convert.ToInt32(CurrentNode.scene_pgrs);
-            CurrentScene= CurrentNode.scene;
+            //CurrentNode=e.Node as RichNode;
+            //id.Text = "ID：" + CurrentNode.id.ToString();
+            //chr_edit.Text= CurrentNode.chr;
+            //txt_edit.Text = CurrentNode.txt;
+            //opt_edit.Text = CurrentNode.opt;
+            //cap_edit.Text = CurrentNode.scene_cap;
+            //pgrs_slc.Value = Convert.ToInt32(CurrentNode.scene_pgrs);
+            //CurrentScene= CurrentNode.scene;
         }
+        #region AI生成实验
+        public static void LoadDialogueToTreeView(string jsonFilePath, TreeView treeView)
+        {
+            string jsonText = File.ReadAllText(jsonFilePath);
+            JObject rootObject = JObject.Parse(jsonText);
+
+            foreach (var rootProperty in rootObject.Properties())
+            {
+                TreeNode rootNode = new TreeNode(rootProperty.Name);
+                treeView.Nodes.Add(rootNode);
+
+                JObject dialogueObject = rootProperty.Value as JObject;
+                if (dialogueObject != null)
+                {
+                    if (dialogueObject.ContainsKey("dia"))
+                    {
+                        JArray diaArray = dialogueObject["dia"] as JArray;
+                        if (diaArray != null)
+                        {
+                            foreach (var diaItem in diaArray)
+                            {
+                                AddDialogueNode(diaItem as JObject, rootNode);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void AddDialogueNode(JObject dialogueItem, TreeNode parentNode)
+        {
+            if (dialogueItem == null)
+                return;
+
+            string txt = dialogueItem["txt"]?.ToString();
+            TreeNode dialogueNode = null;
+
+            if (!string.IsNullOrEmpty(txt))
+            {
+                dialogueNode = new TreeNode(txt);
+                parentNode.Nodes.Add(dialogueNode);
+            }
+
+            if (dialogueItem.ContainsKey("opt"))
+            {
+                JObject optObject = dialogueItem["opt"] as JObject;
+                if (optObject != null)
+                {
+                    foreach (var optProperty in optObject.Properties())
+                    {
+                        TreeNode optNode = new TreeNode(optProperty.Name);
+                        (dialogueNode ?? parentNode).Nodes.Add(optNode);
+                        JArray optArray = optProperty.Value as JArray;
+                        if (optArray != null)
+                        {
+                            foreach (var optItem in optArray)
+                            {
+                                AddDialogueNode(optItem as JObject, optNode);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        #endregion
+
+
 
         private void textBox2_TextChanged(object sender, EventArgs e)
         {

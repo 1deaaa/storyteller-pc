@@ -85,6 +85,7 @@ namespace DialogSystem
             CurrentGroupObjIndex = 0;
             NextDialog = null;
             waitForChoice = false;
+            Program.UI.cap.Text = DialogScene["cap"].ToString();
             DialogArray.Clear();
             DialogArray.Push(new DialogGroup((JArray)DialogScene["dia"]));
             CurrentObj = (JObject)CrtArray[0];
