@@ -48,6 +48,10 @@ namespace DialogSystem
 
             }
         }
+        public RichNode(string t)
+        {
+            Text = t;
+        }
     }
     public class Map
     {
@@ -56,7 +60,7 @@ namespace DialogSystem
         {
           #region 行为映射表
                 //绑定所有指令和函数
-                    {"动作",Method.Animate
+                    {"do",Method.Animate
     }
     #endregion 行为映射表
         };
@@ -102,7 +106,7 @@ namespace DialogSystem
         }
         public static void Animate()
         {
-            
+            Inf("执行了命令");
         }
         public static void RecordBranch(string brc)
         {

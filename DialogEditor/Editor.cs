@@ -12,6 +12,7 @@ using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
+using static DialogSystem.Map;
 
 namespace DialogSystem
 {
@@ -139,8 +140,9 @@ namespace DialogSystem
         void LoadTree()
         {
             //AddSceneToTreeView(view, (JObject)JsonSource);
-            LoadDialogueToTreeView(DataFilePath,view);
+            LoadDialogueToTreeView(view);
         }
+        #region 弃用
         //private void AddSceneToTreeView(TreeView treeView, JObject jsonObject)
         //{
         //    foreach (var scene in jsonObject.Properties())
@@ -239,30 +241,28 @@ namespace DialogSystem
         //        }
         //    }
         //}
-
+        #endregion
         private void view_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            //CurrentNode=e.Node as RichNode;
-            //id.Text = "ID：" + CurrentNode.id.ToString();
-            //chr_edit.Text= CurrentNode.chr;
-            //txt_edit.Text = CurrentNode.txt;
-            //opt_edit.Text = CurrentNode.opt;
-            //cap_edit.Text = CurrentNode.scene_cap;
-            //pgrs_slc.Value = Convert.ToInt32(CurrentNode.scene_pgrs);
-            //CurrentScene= CurrentNode.scene;
+            CurrentNode = e.Node as RichNode;
+            id.Text = "ID：" + CurrentNode.id.ToString();
+            chr_edit.Text = CurrentNode.chr;
+            txt_edit.Text = CurrentNode.txt;
+            opt_edit.Text = CurrentNode.opt;
+            cap_edit.Text = CurrentNode.scene_cap;
+            pgrs_slc.Value = Convert.ToInt32(CurrentNode.scene_pgrs);
+            CurrentScene = CurrentNode.scene;
         }
         #region AI生成实验
-        public static void LoadDialogueToTreeView(string jsonFilePath, TreeView treeView)
+        public static void LoadDialogueToTreeView(TreeView treeView)
         {
-            string jsonText = File.ReadAllText(jsonFilePath);
-            JObject rootObject = JObject.Parse(jsonText);
-
-            foreach (var rootProperty in rootObject.Properties())
+            JObject src = JObject.Parse(File.ReadAllText(DataFilePath));
+            foreach (var scene_ppt in src.Properties())
             {
-                TreeNode rootNode = new TreeNode(rootProperty.Name);
-                treeView.Nodes.Add(rootNode);
-
-                JObject dialogueObject = rootProperty.Value as JObject;
+                RichNode sceneNode = new RichNode(scene_ppt.Name);
+                sceneNode.scene = scene_ppt.Name;
+                treeView.Nodes.Add(sceneNode);
+                JObject dialogueObject = scene_ppt.Value as JObject;
                 if (dialogueObject != null)
                 {
                     if (dialogueObject.ContainsKey("dia"))
@@ -272,7 +272,7 @@ namespace DialogSystem
                         {
                             foreach (var diaItem in diaArray)
                             {
-                                AddDialogueNode(diaItem as JObject, rootNode);
+                                AddDialogueNode(diaItem as JObject, sceneNode);
                             }
                         }
                     }
@@ -280,35 +280,64 @@ namespace DialogSystem
             }
         }
 
-        private static void AddDialogueNode(JObject dialogueItem, TreeNode parentNode)
+        private static void AddDialogueNode(JObject dlg_obj, RichNode parentNode)
         {
-            if (dialogueItem == null)
+            if (dlg_obj == null)
                 return;
-
-            string txt = dialogueItem["txt"]?.ToString();
-            TreeNode dialogueNode = null;
-
+            string txt = dlg_obj["txt"]?.ToString();
+            string chr = dlg_obj["chr"]?.ToString();
+            int id = int.Parse(dlg_obj["id"].ToString());
+            RichNode dlgNode = null;
             if (!string.IsNullOrEmpty(txt))
             {
-                dialogueNode = new TreeNode(txt);
-                parentNode.Nodes.Add(dialogueNode);
+                dlgNode = new RichNode(txt);
+                if (dlg_obj.ContainsKey("opt"))
+                    dlgNode.ForeColor = ThemeColor.Option;
+                dlgNode.chr = chr;
+                dlgNode.txt = txt;
+                dlgNode.id = id;
+                parentNode.Nodes.Add(dlgNode);
             }
-
-            if (dialogueItem.ContainsKey("opt"))
+            if (dlg_obj.ContainsKey("act"))
             {
-                JObject optObject = dialogueItem["opt"] as JObject;
+                JObject actObject = dlg_obj["act"] as JObject;
+                if (actObject != null)
+                {
+                    if (actObject.ContainsKey("bgm"))
+                    {
+                        string bgm = actObject["bgm"].ToString();
+                        RichNode bgmNode = new RichNode("🎵" + bgm);
+                        Method.Music(bgm);
+                        bgmNode.BackColor = ThemeColor.Action;
+                        (dlgNode ?? parentNode).Nodes.Add(bgmNode);
+                    }
+
+                    if (actObject.ContainsKey("fun"))
+                    {
+                        string fun = actObject["fun"].ToString();
+                        RichNode funNode = new RichNode("⚡" + fun);
+                        funNode.BackColor = ThemeColor.Action;
+                        (dlgNode ?? parentNode).Nodes.Add(funNode);
+                    }
+                }
+            }
+            if (dlg_obj.ContainsKey("opt"))
+            {
+                JObject optObject = dlg_obj["opt"] as JObject;
                 if (optObject != null)
                 {
                     foreach (var optProperty in optObject.Properties())
                     {
-                        TreeNode optNode = new TreeNode(optProperty.Name);
-                        (dialogueNode ?? parentNode).Nodes.Add(optNode);
+                        RichNode optNode = new RichNode(optProperty.Name);
+                        optNode.BackColor = ThemeColor.Option;
+                        optNode.id = id;
+                        (dlgNode ?? parentNode).Nodes.Add(optNode);//为空返回parentnode
                         JArray optArray = optProperty.Value as JArray;
                         if (optArray != null)
                         {
-                            foreach (var optItem in optArray)
+                            foreach (var opt_dlg in optArray)
                             {
-                                AddDialogueNode(optItem as JObject, optNode);
+                                AddDialogueNode(opt_dlg as JObject, optNode);
                             }
                         }
                     }
