@@ -21,7 +21,7 @@ namespace DialogSystem
         RichNode CurrentNode;//当前选中节点
         RichNode _last_slc;//上一个选中节点
         public static string DataFilePath = @"..\..\..\对话.json";
-        public static JToken JsonSource = JToken.Parse(File.ReadAllText(DataFilePath));
+        public static JObject JsonSource = JObject.Parse(File.ReadAllText(DataFilePath));
         public static string CurrentScene = "";
         public static int CurrentId;
         int _option_id;//记录选项所属父级id
@@ -433,6 +433,8 @@ namespace DialogSystem
                 }
             }
         }
+
+        
         public static void EditOptObject(JObject obj, string scene, string dialogID, string keyType, string keyName, JToken newKeyName, bool _is_root = true)
         {
             if (obj.TryGetValue(dialogID, out JToken token))
@@ -479,6 +481,146 @@ namespace DialogSystem
                 }
             }
         }
+
+        #region AI
+        private JToken FindDialogue(string scene, int id)
+        {
+            if (JsonSource.TryGetValue(scene, out JToken sceneData))
+            {
+                return FindDialogueById(sceneData["dia"], id);
+            }
+            return null;
+        }
+
+        private JToken FindDialogueById(JToken dialogues, int id)
+        {
+            foreach (var dialogue in dialogues)
+            {
+                if (dialogue["id"].Value<int>() == id)
+                {
+                    return dialogue;
+                }
+                if (dialogue["opt"] != null)
+                {
+                    foreach (var option in dialogue["opt"])
+                    {
+                        var result = FindDialogueById(option.First, id);
+                        if (result != null)
+                        {
+                            return result;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+        private void UpdateDialogueTextAndCharacter(string scene, int id, string newText, int newCharacter)
+        {
+            var dialogue = FindDialogue(scene, id);
+            if (dialogue != null)
+            {
+                dialogue["txt"] = newText;
+                dialogue["chr"] = newCharacter;
+            }
+        }
+
+        private void UpdateOptionName(string scene, int id, string oldOptionName, string newOptionName)
+        {
+            var dialogue = FindDialogue(scene, id);
+            if (dialogue != null && dialogue["opt"] != null)
+            {
+                var options = dialogue["opt"] as JObject;
+                if (options != null && options.ContainsKey(oldOptionName))
+                {
+                    var optionValue = options[oldOptionName];
+                    options.Remove(oldOptionName);
+                    options[newOptionName] = optionValue;
+                }
+            }
+        }
+
+        private void DeleteDialogue(string scene, int id)
+        {
+            var sceneData = JsonSource[scene];
+            if (sceneData != null)
+            {
+                DeleteDialogueById(sceneData["dia"], id);
+            }
+        }
+
+        private bool DeleteDialogueById(JToken dialogues, int id)
+        {
+            for (int i = 0; i < dialogues.Count(); i++)
+            {
+                var dialogue = dialogues[i];
+                if (dialogue["id"].Value<int>() == id)
+                {
+                    dialogue.Remove();
+                    return true;
+                }
+                if (dialogue["opt"] != null)
+                {
+                    foreach (var option in dialogue["opt"])
+                    {
+                        if (DeleteDialogueById(option.First, id))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        private void DeleteOption(string scene, int id, string optionName)
+        {
+            var dialogue = FindDialogue(scene, id);
+            if (dialogue != null && dialogue["opt"] != null)
+            {
+                var options = dialogue["opt"] as JObject;
+                if (options != null && options.ContainsKey(optionName))
+                {
+                    options.Remove(optionName);
+                }
+            }
+        }
+
+        private void AddDialogue(string scene, int parentId, JObject newDialogue)
+        {
+            var parentDialogue = FindDialogue(scene, parentId);
+            if (parentDialogue != null)
+            {
+                var dialogues = parentDialogue.Parent as JArray;
+                if (dialogues != null)
+                {
+                    newDialogue["id"] = ++CurrentId;
+                    newDialogue["chr"] = 0;
+                    newDialogue["txt"] = "默认文字";
+                    dialogues.Add(newDialogue);
+                }
+            }
+        }
+
+        private void AddOption(string scene, int id, string optionName, JArray newOptions)
+        {
+            var dialogue = FindDialogue(scene, id);
+            if (dialogue != null)
+            {
+                if (dialogue["opt"] == null)
+                {
+                    dialogue["opt"] = new JObject();
+                }
+                var options = dialogue["opt"] as JObject;
+                options[optionName] = newOptions;
+            }
+        }
+
+        private void SaveJsonSourceToFile(string filePath)
+        {
+            File.WriteAllText(filePath, JsonSource.ToString());
+        }
+
+        #endregion
 
         private void chr_edit_KeyDown(object sender, KeyEventArgs e)
         {
