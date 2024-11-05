@@ -35,6 +35,7 @@ namespace DialogSystem
             this.search_list = new System.Windows.Forms.ListBox();
             this.search = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.dia = new System.Windows.Forms.Button();
             this.pgrs_slc = new System.Windows.Forms.NumericUpDown();
             this.label3 = new System.Windows.Forms.Label();
             this.cap_edit = new System.Windows.Forms.TextBox();
@@ -48,7 +49,7 @@ namespace DialogSystem
             this.id = new System.Windows.Forms.Label();
             this.chr_edit = new System.Windows.Forms.TextBox();
             this.txt_edit = new System.Windows.Forms.TextBox();
-            this.dia = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pgrs_slc)).BeginInit();
             this.SuspendLayout();
@@ -116,6 +117,20 @@ namespace DialogSystem
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(251, 762);
             this.panel1.TabIndex = 3;
+            // 
+            // dia
+            // 
+            this.dia.BackColor = System.Drawing.Color.CornflowerBlue;
+            this.dia.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.dia.Font = new System.Drawing.Font("微软雅黑 Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.dia.Location = new System.Drawing.Point(5, 593);
+            this.dia.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.dia.Name = "dia";
+            this.dia.Size = new System.Drawing.Size(237, 48);
+            this.dia.TabIndex = 17;
+            this.dia.Text = "创建新对话";
+            this.dia.UseVisualStyleBackColor = false;
+            this.dia.Click += new System.EventHandler(this.dia_Click);
             // 
             // pgrs_slc
             // 
@@ -275,18 +290,15 @@ namespace DialogSystem
             this.txt_edit.TextChanged += new System.EventHandler(this.txt_edit_TextChanged);
             this.txt_edit.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txt_edit_KeyDown);
             // 
-            // dia
+            // button1
             // 
-            this.dia.BackColor = System.Drawing.Color.CornflowerBlue;
-            this.dia.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.dia.Font = new System.Drawing.Font("微软雅黑 Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.dia.Location = new System.Drawing.Point(5, 593);
-            this.dia.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.dia.Name = "dia";
-            this.dia.Size = new System.Drawing.Size(237, 48);
-            this.dia.TabIndex = 17;
-            this.dia.Text = "创建新对话";
-            this.dia.UseVisualStyleBackColor = false;
+            this.button1.Location = new System.Drawing.Point(1013, 153);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 4;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click_1);
             // 
             // Editor
             // 
@@ -294,6 +306,7 @@ namespace DialogSystem
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.GhostWhite;
             this.ClientSize = new System.Drawing.Size(1421, 762);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.search_list);
             this.Controls.Add(this.search);
@@ -332,5 +345,6 @@ namespace DialogSystem
         private Label label2;
         private NumericUpDown pgrs_slc;
         private Button dia;
+        private Button button1;
     }
 }
