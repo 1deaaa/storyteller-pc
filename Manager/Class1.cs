@@ -30,8 +30,8 @@ namespace DialogSystem
     }
     public class RichNode : TreeNode
     {
-        public int id = 0;
-        public string chr = null;
+        public int id = -1;
+        public int chr = -1;
         public string txt = null;
         public string next = null;
         public string opt = null;

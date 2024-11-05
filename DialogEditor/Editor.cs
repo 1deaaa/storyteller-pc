@@ -340,7 +340,7 @@ namespace DialogSystem
             CurrentNode = e.Node as RichNode;
             id.Text = "ID：" + CurrentNode.id.ToString();
             CurrentId= CurrentNode.id;
-            chr_edit.Text = CurrentNode.chr;
+            chr_edit.Text = CurrentNode.chr.ToString();
             txt_edit.Text = CurrentNode.txt;
             opt_edit.Text = CurrentNode.opt;
             cap_edit.Text = CurrentNode.scene_cap;
@@ -381,7 +381,7 @@ namespace DialogSystem
             if (dlg_obj == null)
                 return;
             string txt = dlg_obj["txt"]?.ToString();
-            string chr = dlg_obj["chr"]?.ToString();
+            int chr = int.Parse(dlg_obj["chr"]?.ToString());
             int id = int.Parse(dlg_obj["id"].ToString());
             if(id>NewId)
             {
@@ -491,8 +491,8 @@ namespace DialogSystem
                     return;
                 txt_edit.Text = txt_edit.Text.Replace("\n","");
                 CurrentNode.txt = txt_edit.Text;
-                CurrentNode.Text = Map.ChrMap[int.Parse(CurrentNode.chr)] + "：" + CurrentNode.txt;
-
+                CurrentNode.Text = Map.ChrMap[CurrentNode.chr] + "：" + CurrentNode.txt;
+                EditDlgTxt(CurrentScene,CurrentId,CurrentNode.txt);
                 File.WriteAllText(DataFilePath,JsonSource.ToString());
             }
         }
@@ -529,12 +529,19 @@ namespace DialogSystem
             }
             return null;
         }
-        private void UpdateDialogueTextAndCharacter(string scene, int id, string newText, int newCharacter)
+        private void EditDlgTxt(string scene, int id, string newText)
         {
             var dialogue = FindDialogue(scene, id);
             if (dialogue != null)
             {
                 dialogue["txt"] = newText;
+            }
+        }
+        private void EditDlgChr(string scene, int id, int newCharacter)
+        {
+            var dialogue = FindDialogue(scene, id);
+            if (dialogue != null)
+            {
                 dialogue["chr"] = newCharacter;
             }
         }
@@ -646,7 +653,7 @@ namespace DialogSystem
         {
             if (e.KeyCode == Keys.Enter)
             {
-                if (CurrentNode.chr == null)
+                if (CurrentNode.chr <0)
                     return;
                 if(chr_edit.Text=="")
                 {
@@ -654,9 +661,9 @@ namespace DialogSystem
                     chr_edit.Text = "0";
                 }
                 chr_edit.Text = chr_edit.Text.Replace("\n", "");
-                CurrentNode.chr = chr_edit.Text;
-                CurrentNode.Text = Map.ChrMap[int.Parse(CurrentNode.chr)] + "：" + CurrentNode.txt;
-                
+                CurrentNode.chr = int.Parse(chr_edit.Text);
+                CurrentNode.Text = Map.ChrMap[CurrentNode.chr] + "：" + CurrentNode.txt;
+                EditDlgChr(CurrentScene,CurrentId,CurrentNode.chr);
                 File.WriteAllText(DataFilePath, JsonSource.ToString());
             }
         }
@@ -673,7 +680,7 @@ namespace DialogSystem
                     return;
                 }
                 CurrentNode.Text = opt_edit.Text;
-
+                UpdateOptionName(CurrentScene, CurrentId, CurrentNode.opt, opt_edit.Text);
                 CurrentNode.opt= opt_edit.Text;
                 File.WriteAllText(DataFilePath, JsonSource.ToString());
             }
