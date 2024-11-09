@@ -356,6 +356,7 @@ namespace DialogSystem
                 RichNode sceneNode = new RichNode(scene_ppt.Name);
                 CurrentScene=scene_ppt.Name;
                 sceneNode.scene = CurrentScene;
+                sceneNode.scene_cap = scene_ppt.Value["cap"]?.ToString();
                 sceneNode.NodeType = NodeType.Scene;
                 treeView.Nodes.Add(sceneNode);
                 JObject dialogueObject = scene_ppt.Value as JObject;
@@ -641,7 +642,10 @@ namespace DialogSystem
                 options[optionName] = newOptions;
             }
         }
-
+        private void EditScene(string scene,string newName)
+        {
+            
+        }
         private void SaveJsonSourceToFile(string filePath)
         {
             File.WriteAllText(filePath, JsonSource.ToString());
@@ -702,6 +706,7 @@ namespace DialogSystem
                 return;
             }
             CurrentNode.scene_pgrs=pgrs_slc.Value.ToString();
+            JsonSource[CurrentScene]["pgrs"]= pgrs_slc.Value;
         }
 
         private void opt_edit_TextChanged(object sender, EventArgs e)
@@ -718,6 +723,23 @@ namespace DialogSystem
         private void dia_Click(object sender, EventArgs e)
         {
             AddDialogue(CurrentScene, CurrentId, "ddd", 6);
+        }
+
+        private void cap_edit_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                if (CurrentNode.scene==null)
+                    return;
+                if (cap_edit.Text == "")
+                {
+                    Method.Error("角色节点禁止为空！！！");
+                    cap_edit.Text = "场景";
+                }
+                CurrentNode.scene_cap = cap_edit.Text;
+                EditDlgChr(CurrentScene, CurrentId, CurrentNode.chr);
+                File.WriteAllText(DataFilePath, JsonSource.ToString());
+            }
         }
     }
 }

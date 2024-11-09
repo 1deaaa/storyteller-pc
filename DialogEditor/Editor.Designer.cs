@@ -166,6 +166,7 @@ namespace DialogSystem
             this.cap_edit.Size = new System.Drawing.Size(235, 23);
             this.cap_edit.TabIndex = 14;
             this.cap_edit.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.cap_edit.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cap_edit_KeyDown);
             // 
             // label2
             // 

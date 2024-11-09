@@ -116,7 +116,7 @@ namespace DialogSystem
             DisplayOne(CurrentObj, Program.UI);
         }
 
-        public static void DisplayOne(JObject crt_obj, MainUI ui)//传入一个对话对象 每个对话对象的根级必为obj 而深处必只有prop
+        public static void DisplayOne(JObject crt_obj, MainUI ui)//传入一个对话对象
         {
             #region 处理跳转和初始化
             if (EndDialog)
