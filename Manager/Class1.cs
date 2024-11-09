@@ -8,9 +8,24 @@ using System.Drawing;
 using Newtonsoft.Json.Linq;
 using System.Xml.Linq;
 using DialogSystem;
+using System.IO;
 
 namespace DialogSystem
 {
+    public class Manager
+    {
+        public static string DataFilePath = @"..\..\..\对话.json";
+        public static JArray JsonSource = JArray.Parse(File.ReadAllText(DataFilePath));
+        public static JObject GetSceneObj(string scene)
+        {
+            foreach (var obj in JsonSource)
+            {
+                if (obj["scene"].ToString() == scene)
+                    return obj as JObject;
+            }
+            return null;
+        }
+    }
     public enum NodeType
     {
         OptionRoot,

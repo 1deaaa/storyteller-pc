@@ -20,8 +20,7 @@ namespace DialogSystem
     {
         RichNode CurrentNode;//当前选中节点
         RichNode _last_slc;//上一个选中节点
-        public static string DataFilePath = @"..\..\..\对话.json";
-        public static JObject JsonSource = JObject.Parse(File.ReadAllText(DataFilePath));
+        public static Stack<JObject> History;
         public static string CurrentScene = "";
         public static int NewId=-1;
         public static int CurrentId = -1;
@@ -140,7 +139,7 @@ namespace DialogSystem
 
         void LoadTree()
         {
-            //AddSceneToTreeView(view, (JObject)JsonSource);
+            //AddSceneToTreeView(view, (JObject)Manager.JsonSource);
             LoadDialogueToTreeView(view);
         }
         #region 弃用
@@ -350,16 +349,15 @@ namespace DialogSystem
         #region AI生成实验
         public static void LoadDialogueToTreeView(TreeView treeView)
         {
-            JObject src = JObject.Parse(File.ReadAllText(DataFilePath));
-            foreach (var scene_ppt in src.Properties())
+            foreach (var scene_obj in Manager.JsonSource)
             {
-                RichNode sceneNode = new RichNode(scene_ppt.Name);
-                CurrentScene=scene_ppt.Name;
+                RichNode sceneNode = new RichNode(scene_obj["scene"].ToString());
+                CurrentScene= scene_obj["scene"].ToString();
                 sceneNode.scene = CurrentScene;
-                sceneNode.scene_cap = scene_ppt.Value["cap"]?.ToString();
+                sceneNode.scene_cap = scene_obj["cap"]?.ToString();
                 sceneNode.NodeType = NodeType.Scene;
                 treeView.Nodes.Add(sceneNode);
-                JObject dialogueObject = scene_ppt.Value as JObject;
+                JObject dialogueObject = scene_obj as JObject;
                 if (dialogueObject != null)
                 {
                     if (dialogueObject.ContainsKey("dia"))
@@ -384,9 +382,9 @@ namespace DialogSystem
             string txt = dlg_obj["txt"]?.ToString();
             int chr = int.Parse(dlg_obj["chr"]?.ToString());
             int id = int.Parse(dlg_obj["id"].ToString());
-            if(id>NewId)
+            if (id > NewId)
             {
-                NewId=id;
+                NewId = id;
                 NewId++;
             }
             RichNode dlgNode = null;
@@ -430,21 +428,22 @@ namespace DialogSystem
             }
             if (dlg_obj.ContainsKey("opt"))
             {
-                JObject optObject = dlg_obj["opt"] as JObject;
-                if (optObject != null)
+                JArray optArray = dlg_obj["opt"] as JArray;
+                if (optArray != null)
                 {
-                    foreach (var optProperty in optObject.Properties())
+                    foreach (JObject optObject in optArray)
                     {
-                        RichNode optNode = new RichNode(optProperty.Name);
-                        optNode.opt = optProperty.Name;
+                        string optName = optObject["optn"]?.ToString();
+                        RichNode optNode = new RichNode(optName);
+                        optNode.opt = optName;
                         optNode.BackColor = ThemeColor.Option;
-                        optNode.id = id;//设置选项节点ID
+                        optNode.id = id; // 设置选项节点ID
                         optNode.scene = CurrentScene;
-                        (dlgNode ?? parentNode).Nodes.Add(optNode);//为空返回parentnode
-                        JArray optArray = optProperty.Value as JArray;
-                        if (optArray != null)
+                        (dlgNode ?? parentNode).Nodes.Add(optNode); // 为空返回parentnode
+                        JArray optDlgArray = optObject["dia"] as JArray;
+                        if (optDlgArray != null)
                         {
-                            foreach (var opt_dlg in optArray)
+                            foreach (var opt_dlg in optDlgArray)
                             {
                                 AddDialogueNode(opt_dlg as JObject, optNode);
                             }
@@ -453,6 +452,8 @@ namespace DialogSystem
                 }
             }
         }
+
+
 
 
         #endregion
@@ -494,14 +495,15 @@ namespace DialogSystem
                 CurrentNode.txt = txt_edit.Text;
                 CurrentNode.Text = Map.ChrMap[CurrentNode.chr] + "：" + CurrentNode.txt;
                 EditDlgTxt(CurrentScene,CurrentId,CurrentNode.txt);
-                File.WriteAllText(DataFilePath,JsonSource.ToString());
+                File.WriteAllText(Manager.DataFilePath,Manager.JsonSource.ToString());
             }
         }
 
         #region AI
         private JToken FindDialogue(string scene, int id)
         {
-            if (JsonSource.TryGetValue(scene, out JToken sceneData))
+            JObject tar_obj=Manager.GetSceneObj(scene);
+            if (tar_obj.TryGetValue(scene, out JToken sceneData))
             {
                 return _FindDialogueById(sceneData["dia"], id);
             }
@@ -520,7 +522,7 @@ namespace DialogSystem
                 {
                     foreach (var option in dialogue["opt"])
                     {
-                        var result = _FindDialogueById(option.First, id);
+                        var result = _FindDialogueById(option["dia"], id);
                         if (result != null)
                         {
                             return result;
@@ -530,6 +532,7 @@ namespace DialogSystem
             }
             return null;
         }
+
         private void EditDlgTxt(string scene, int id, string newText)
         {
             var dialogue = FindDialogue(scene, id);
@@ -547,24 +550,32 @@ namespace DialogSystem
             }
         }
 
-        private void UpdateOptionName(string scene, int id, string oldOptionName, string newOptionName)
+        private void EditOptName(string scene, int id, string oldOptionName, string newOptionName)
         {
             var dialogue = FindDialogue(scene, id);
             if (dialogue != null && dialogue["opt"] != null)
             {
-                var options = dialogue["opt"] as JObject;
-                if (options != null && options.ContainsKey(oldOptionName))
+                var options = dialogue["opt"] as JArray;
+                if (options != null)
                 {
-                    var optionValue = options[oldOptionName];
-                    options.Remove(oldOptionName);
-                    options[newOptionName] = optionValue;
+                    foreach (var option in options)
+                    {
+                        if (option["optn"]?.ToString() == oldOptionName)
+                        {
+                            option["optn"] = newOptionName;
+                            break;
+                        }
+                    }
                 }
             }
         }
 
+
+
+
         private void DeleteDialogue(string scene, int id)
         {
-            var sceneData = JsonSource[scene];
+            var sceneData = Manager.JsonSource[scene];
             if (sceneData != null)
             {
                 _DeleteDialogueById(sceneData["dia"], id);
@@ -585,7 +596,7 @@ namespace DialogSystem
                 {
                     foreach (var option in dialogue["opt"])
                     {
-                        if (_DeleteDialogueById(option.First, id))
+                        if (_DeleteDialogueById(option["dia"], id))
                         {
                             return true;
                         }
@@ -595,18 +606,24 @@ namespace DialogSystem
             return false;
         }
 
+
         private void DeleteOption(string scene, int id, string optionName)
         {
             var dialogue = FindDialogue(scene, id);
             if (dialogue != null && dialogue["opt"] != null)
             {
-                var options = dialogue["opt"] as JObject;
-                if (options != null && options.ContainsKey(optionName))
+                var options = dialogue["opt"] as JArray;
+                if (options != null)
                 {
-                    options.Remove(optionName);
+                    var optionToRemove = options.FirstOrDefault(opt => opt["optn"]?.ToString() == optionName);
+                    if (optionToRemove != null)
+                    {
+                        options.Remove(optionToRemove);
+                    }
                 }
             }
         }
+
 
         private void AddDialogue(string scene,int parentId, string newText, int newCharacter)
         {
@@ -636,19 +653,26 @@ namespace DialogSystem
             {
                 if (dialogue["opt"] == null)
                 {
-                    dialogue["opt"] = new JObject();
+                    dialogue["opt"] = new JArray();
                 }
-                var options = dialogue["opt"] as JObject;
-                options[optionName] = newOptions;
+                var options = dialogue["opt"] as JArray;
+                var newOption = new JObject
+                {
+                    ["optn"] = optionName,
+                    ["dia"] = newOptions
+                };
+                options.Add(newOption);
             }
         }
+
+
         private void EditScene(string scene,string newName)
         {
             
         }
         private void SaveJsonSourceToFile(string filePath)
         {
-            File.WriteAllText(filePath, JsonSource.ToString());
+            File.WriteAllText(filePath, Manager.JsonSource.ToString());
         }
 
         #endregion
@@ -668,7 +692,7 @@ namespace DialogSystem
                 CurrentNode.chr = int.Parse(chr_edit.Text);
                 CurrentNode.Text = Map.ChrMap[CurrentNode.chr] + "：" + CurrentNode.txt;
                 EditDlgChr(CurrentScene,CurrentId,CurrentNode.chr);
-                File.WriteAllText(DataFilePath, JsonSource.ToString());
+                File.WriteAllText(Manager.DataFilePath, Manager.JsonSource.ToString());
             }
         }
 
@@ -684,9 +708,9 @@ namespace DialogSystem
                     return;
                 }
                 CurrentNode.Text = opt_edit.Text;
-                UpdateOptionName(CurrentScene, CurrentId, CurrentNode.opt, opt_edit.Text);
+                EditOptName(CurrentScene, CurrentId, CurrentNode.opt, opt_edit.Text);
                 CurrentNode.opt= opt_edit.Text;
-                File.WriteAllText(DataFilePath, JsonSource.ToString());
+                File.WriteAllText(Manager.DataFilePath, Manager.JsonSource.ToString());
             }
         }
 
@@ -706,7 +730,7 @@ namespace DialogSystem
                 return;
             }
             CurrentNode.scene_pgrs=pgrs_slc.Value.ToString();
-            JsonSource[CurrentScene]["pgrs"]= pgrs_slc.Value;
+            Manager.JsonSource[CurrentScene]["pgrs"]= pgrs_slc.Value;
         }
 
         private void opt_edit_TextChanged(object sender, EventArgs e)
@@ -717,7 +741,7 @@ namespace DialogSystem
         private void button1_Click_1(object sender, EventArgs e)
         {
 
-            Method.Inf(JsonSource.ToString());
+            Method.Inf(Manager.JsonSource.ToString());
         }
 
         private void dia_Click(object sender, EventArgs e)
@@ -738,7 +762,7 @@ namespace DialogSystem
                 }
                 CurrentNode.scene_cap = cap_edit.Text;
                 EditDlgChr(CurrentScene, CurrentId, CurrentNode.chr);
-                File.WriteAllText(DataFilePath, JsonSource.ToString());
+                File.WriteAllText(Manager.DataFilePath, Manager.JsonSource.ToString());
             }
         }
     }

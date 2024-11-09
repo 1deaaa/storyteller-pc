@@ -9,9 +9,7 @@ namespace DialogSystem
 {
     public partial class MainUI : Form
     {
-        public static string SrcPath= @"..\..\..\对话.json";
-        public static JObject JsonSource = JObject.Parse(System.IO.File.ReadAllText(SrcPath));
-        //层级设计:总对象(obj)->索引(array)->键值对(prop)
+        //对话脚本结构中 之所以不用键名存储实际文本 是因为键名无法被修改
         public MainUI()
         {
             InitializeComponent();
@@ -25,7 +23,7 @@ namespace DialogSystem
 
         private void MainUI_Load(object sender, EventArgs e)
         {
-            Dialog.SceneInit("开场");
+            Dialog.SceneInit("开场场景");
             Dialog.DisplayOne(Dialog.CurrentObj, this);
         }
 
@@ -80,7 +78,7 @@ namespace DialogSystem
         public static void SceneInit(string _scene)
         {
             //??=如果为null才赋值 防止重复赋值
-            DialogScene = MainUI.JsonSource[_scene];//根（场景）键值对的值为数组  Token代表任意数据节点 Prop代表键值对 Object代表{xxx}
+            DialogScene = Manager.GetSceneObj(_scene);//根（场景）键值对的值为数组  Token代表任意数据节点 Prop代表键值对 Object代表{xxx}
             MainObj.Clear();
             CurrentGroupObjIndex = 0;
             NextDialog = null;
@@ -108,13 +106,16 @@ namespace DialogSystem
             //
             Program.UI.Text = "选择了选项" + Choice.ToString();
             //
-            DialogArray.Push(new DialogGroup((JArray)CurrentObj[clicked_btn.Text]));//根据选项定位新的对话组
+            JObject selectedOption = (JObject)CurrentObj["opt"][Choice - 1];
+            JArray diaArray = (JArray)selectedOption["dia"];
+            DialogArray.Push(new DialogGroup(diaArray));//根据选项定位新的对话组
             CurrentObj = (JObject)CrtArray[0];//进入选项内部对话
             foreach (var i in branch_btns)
                 i.Dispose();//关闭选项
             branch_btns.Clear();
             DisplayOne(CurrentObj, Program.UI);
         }
+
 
         public static void DisplayOne(JObject crt_obj, MainUI ui)//传入一个对话对象
         {
@@ -134,6 +135,7 @@ namespace DialogSystem
             waitForChoice = false;
             DialogEnabled = true;
             #endregion
+
             foreach (JProperty key in crt_obj.Properties())//解析一个dia下所有参数
             {
                 switch (key.Name)
@@ -165,42 +167,41 @@ namespace DialogSystem
                     case "opt":
                         DialogEnabled = false;
                         waitForChoice = true;
-                        CurrentObj = (JObject)CurrentObj["opt"];
                         int i = 1;
-                        foreach (JProperty options in key.Value)//"option":[xxx]
+                        foreach (JObject option in key.Value)
                         {
                             ChoiceBtn btn = new();
                             branch_btns.Add(btn);
-                            btn.Text = options.Name;
+                            btn.Text = option["optn"].ToString();
                             btn.Choice = i;
                             #region 界面相关
                             btn.Size = new Size(200, 50);
-                            btn.Location = new Point(ui.Width - 200,  btn.Size.Height * i);
+                            btn.Location = new Point(ui.Width - 200, btn.Size.Height * i);
                             btn.Click += ChoiceBtn_Click;
                             ui.Controls.Add(btn);
                             #endregion
                             i++;
                         }
-                        //按钮点击事件：向深处（子级对象）递归一次
                         break;
                     case "next":
                         NextDialog = key.Value.ToString();
                         break;
                 }
             }
+
             //解析任务结束 已经显示在屏幕上 开始定位下一次解析位置 所有current皆为下次待解析对象
             if (CrtIndex < CrtArray.Count)
                 CrtIndex++;
             if (waitForChoice)
                 return;
-            if (NextDialog !=null)
+            if (NextDialog != null)
             {
                 SceneInit(NextDialog);
             }
-            
-            if (CrtArray.Count-CrtIndex == 0)//本层已全部解析完毕 退出本层
+
+            if (CrtArray.Count - CrtIndex == 0)//本层已全部解析完毕 退出本层
             {
-                while(CrtArray.Count - CrtIndex == 0)
+                while (CrtArray.Count - CrtIndex == 0)
                 {
                     DialogArray.Pop();
                     if (DialogArray.Count == 0)//场景所有对话结束
@@ -209,24 +210,14 @@ namespace DialogSystem
                         return;
                     }
                 }
-                //if (DialogArray.Count == 0)//场景所有对话结束
-                //{
-                //    EndDialog = true;//下次点击 在事件开头直接退出
-                //    return;
-                //}
-                CurrentObj=(JObject)CrtArray[CrtIndex];//切换到外层
+                CurrentObj = (JObject)CrtArray[CrtIndex];//切换到外层
             }
-            else if(CrtArray.Count - CrtIndex > 0)
+            else if (CrtArray.Count - CrtIndex > 0)
             {
-                CurrentObj =(JObject)CrtArray[CrtIndex];
+                CurrentObj = (JObject)CrtArray[CrtIndex];
             }
-            //if (!IsChoice && NextDialog == "" && RestOfGroupMember == 0 && CurrentGroupObjIndex + 1 < MainObj.Count)
-            //    CurrentObj = MainObj[++CurrentGroupObjIndex];
-            //else if (RestOfGroupMember > 0)
-            //    CurrentObj = (JObject)CurrentCrtArray[CurrentDialogArray.Count - RestOfGroupMember];
-            //else if (CurrentGroupObjIndex + 1 >= MainObj.Count && NextDialog == "")
-            //    EndDialog = true;
         }
+
         public static void End(MainUI ui)
         {
             ui.txt.Dispose();
