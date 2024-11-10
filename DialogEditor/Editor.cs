@@ -11,7 +11,6 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using System.IO;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 using static DialogSystem.Map;
 
 namespace DialogSystem
@@ -20,17 +19,17 @@ namespace DialogSystem
     {
         RichNode CurrentNode;//当前选中节点
         RichNode _last_slc;//上一个选中节点
-        public static Stack<JObject> History;
         public static string CurrentScene = "";
         public static int NewId=-1;
         public static int CurrentId = -1;
+        int crt_chr = 0;
         int _option_id;//记录选项所属父级id
         #region 搜索和UI相关
         public Editor()
         {
             InitializeComponent();
-            CheckForIllegalCrossThreadCalls = false;
-            LoadTree();
+            CheckForIllegalCrossThreadCalls = false;//禁用多线程报错
+            LoadDialogueToTreeView(view,Manager.JsonSource);
         }
 
         private RichNode FindNodeByText(TreeNodeCollection nodes, string searchText)
@@ -136,12 +135,7 @@ namespace DialogSystem
             search_list.Size = new Size(search.Width, Height - 40 - 4);
         }
         #endregion
-
-        void LoadTree()
-        {
-            //AddSceneToTreeView(view, (JObject)Manager.JsonSource);
-            LoadDialogueToTreeView(view);
-        }
+        int prev_obj_index = 0;//在编辑数组成员时 记录上一个对象的索引
         #region 弃用
         //public static void EditSingleKey(JObject obj, string scene, string dialogID, string keyType, JToken newValue, bool _is_root = true)
         //{
@@ -337,6 +331,8 @@ namespace DialogSystem
         private void view_AfterSelect(object sender, TreeViewEventArgs e)
         {
             CurrentNode = e.Node as RichNode;
+            if(CurrentNode.chr>-1)
+                crt_chr = CurrentNode.chr;
             id.Text = "ID：" + CurrentNode.id.ToString();
             CurrentId= CurrentNode.id;
             chr_edit.Text = CurrentNode.chr.ToString();
@@ -347,9 +343,9 @@ namespace DialogSystem
             CurrentScene = CurrentNode.scene;
         }
         #region AI生成实验
-        public static void LoadDialogueToTreeView(TreeView treeView)
+        public void LoadDialogueToTreeView(TreeView treeView,JArray src)
         {
-            foreach (var scene_obj in Manager.JsonSource)
+            foreach (var scene_obj in src)
             {
                 RichNode sceneNode = new RichNode(scene_obj["scene"].ToString());
                 CurrentScene= scene_obj["scene"].ToString();
@@ -375,7 +371,7 @@ namespace DialogSystem
             }
         }
 
-        private static void AddDialogueNode(JObject dlg_obj, RichNode parentNode)
+        private void AddDialogueNode(JObject dlg_obj, RichNode parentNode)
         {
             if (dlg_obj == null)
                 return;
@@ -391,12 +387,16 @@ namespace DialogSystem
             if (!string.IsNullOrEmpty(txt))
             {
                 dlgNode = new RichNode(txt);
-                if (dlg_obj.ContainsKey("opt"))
+                if (dlg_obj.ContainsKey("opt"))//带opt的对话节点
+                {
                     dlgNode.ForeColor = ThemeColor.Option;
+                    dlgNode.NodeType = NodeType.DlgWithOpt;
+                }
                 dlgNode.chr = chr;
                 dlgNode.txt = txt;
                 dlgNode.id = id;
                 dlgNode.scene = CurrentScene;
+                dlgNode.Text = Map.ChrMap[chr] + "：" + dlgNode.txt;
                 parentNode.Nodes.Add(dlgNode);
             }
             if (dlg_obj.ContainsKey("act"))
@@ -482,32 +482,24 @@ namespace DialogSystem
 
         private void txt_edit_TextChanged(object sender, EventArgs e)
         {
-            
+            if (CurrentNode.txt == null)
+                return;
+            txt_edit.Text = txt_edit.Text.Replace("\n", "");
+            CurrentNode.txt = txt_edit.Text;
+            CurrentNode.Text = Map.ChrMap[CurrentNode.chr] + "：" + CurrentNode.txt;
+            EditDlgTxt(CurrentScene, CurrentId, CurrentNode.txt);
         }
 
         private void txt_edit_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Enter)
-            {
-                if (CurrentNode.txt == null)
-                    return;
-                txt_edit.Text = txt_edit.Text.Replace("\n","");
-                CurrentNode.txt = txt_edit.Text;
-                CurrentNode.Text = Map.ChrMap[CurrentNode.chr] + "：" + CurrentNode.txt;
-                EditDlgTxt(CurrentScene,CurrentId,CurrentNode.txt);
-                File.WriteAllText(Manager.DataFilePath,Manager.JsonSource.ToString());
-            }
+
         }
 
         #region AI
         private JToken FindDialogue(string scene, int id)
         {
             JObject tar_obj=Manager.GetSceneObj(scene);
-            if (tar_obj.TryGetValue(scene, out JToken sceneData))
-            {
-                return _FindDialogueById(sceneData["dia"], id);
-            }
-            return null;
+            return _FindDialogueById(tar_obj["dia"], id);
         }
 
         private JToken _FindDialogueById(JToken dialogues, int id)
@@ -575,7 +567,7 @@ namespace DialogSystem
 
         private void DeleteDialogue(string scene, int id)
         {
-            var sceneData = Manager.JsonSource[scene];
+            var sceneData = Manager.GetSceneObj(scene);
             if (sceneData != null)
             {
                 _DeleteDialogueById(sceneData["dia"], id);
@@ -625,12 +617,12 @@ namespace DialogSystem
         }
 
 
-        private void AddDialogue(string scene,int parentId, string newText, int newCharacter)
+        private void AddDialogue(string scene,int prevId, string newText, int newCharacter)
         {
-            var parentDialogue = FindDialogue(scene, parentId);
-            if (parentDialogue != null)
+            var prevDialogue = FindDialogue(scene, prevId);
+            if (prevDialogue != null)
             {
-                var dialogues = parentDialogue.Parent as JArray;
+                var dialogues = prevDialogue.Parent as JArray;
                 if (dialogues != null)
                 {
                     JObject newDialogue = new JObject
@@ -639,8 +631,8 @@ namespace DialogSystem
                         ["chr"] = newCharacter,
                         ["txt"] = newText
                     };
-                    int index = dialogues.IndexOf(parentDialogue);
-                    dialogues.Insert(index + 1, newDialogue);
+                    prev_obj_index = dialogues.IndexOf(prevDialogue);
+                    dialogues.Insert(prev_obj_index + 1, newDialogue);
                 }
             }
         }
@@ -670,9 +662,9 @@ namespace DialogSystem
         {
             
         }
-        private void SaveJsonSourceToFile(string filePath)
+        private void SaveJson()
         {
-            File.WriteAllText(filePath, Manager.JsonSource.ToString());
+            File.WriteAllText(Manager.DataFilePath, Manager.JsonSource.ToString());
         }
 
         #endregion
@@ -681,18 +673,25 @@ namespace DialogSystem
         {
             if (e.KeyCode == Keys.Enter)
             {
-                if (CurrentNode.chr <0)
+                if (CurrentNode.chr < 0)
                     return;
-                if(chr_edit.Text=="")
+                if (chr_edit.Text == "")
                 {
                     Method.Error("角色节点禁止为空！！！");
                     chr_edit.Text = "0";
                 }
                 chr_edit.Text = chr_edit.Text.Replace("\n", "");
                 CurrentNode.chr = int.Parse(chr_edit.Text);
-                CurrentNode.Text = Map.ChrMap[CurrentNode.chr] + "：" + CurrentNode.txt;
-                EditDlgChr(CurrentScene,CurrentId,CurrentNode.chr);
-                File.WriteAllText(Manager.DataFilePath, Manager.JsonSource.ToString());
+                try
+                {
+                    CurrentNode.Text = Map.ChrMap[CurrentNode.chr] + "：" + CurrentNode.txt;
+                }
+                catch {
+                    Method.Error("角色ID不存在！！！");
+                    chr_edit.Text = "0";
+                    CurrentNode.chr = 0;
+                }
+                EditDlgChr(CurrentScene, CurrentId, CurrentNode.chr);
             }
         }
 
@@ -710,7 +709,6 @@ namespace DialogSystem
                 CurrentNode.Text = opt_edit.Text;
                 EditOptName(CurrentScene, CurrentId, CurrentNode.opt, opt_edit.Text);
                 CurrentNode.opt= opt_edit.Text;
-                File.WriteAllText(Manager.DataFilePath, Manager.JsonSource.ToString());
             }
         }
 
@@ -746,7 +744,17 @@ namespace DialogSystem
 
         private void dia_Click(object sender, EventArgs e)
         {
-            AddDialogue(CurrentScene, CurrentId, "ddd", 6);
+            if (CurrentNode.txt == null)
+                return;
+            AddDialogue(CurrentScene, CurrentId, "", 0);
+            RichNode rn= new RichNode("");
+            rn.id = NewId;
+            rn.chr = crt_chr;
+            rn.txt = "";
+            rn.scene = CurrentScene;
+            CurrentNode.Parent.Nodes.Insert(prev_obj_index+1,rn);
+            view.SelectedNode = rn;
+            txt_edit.Focus();
         }
 
         private void cap_edit_KeyDown(object sender, KeyEventArgs e)
@@ -762,8 +770,60 @@ namespace DialogSystem
                 }
                 CurrentNode.scene_cap = cap_edit.Text;
                 EditDlgChr(CurrentScene, CurrentId, CurrentNode.chr);
-                File.WriteAllText(Manager.DataFilePath, Manager.JsonSource.ToString());
             }
+        }
+
+        private void chr_edit_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void 删除节点ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if(CurrentNode.txt!=null)
+            {
+                if (CurrentNode.NodeType == NodeType.DlgWithOpt)//有子节点则进行二次确认
+                {
+                    if (Method.Warn("这将删除所有节点下所有内容 务必谨慎操作！！！"))
+                    {
+                        DeleteDialogue(CurrentScene, CurrentId);
+                        CurrentNode.Remove();
+                    }
+                }
+                else
+                {
+                    DeleteDialogue(CurrentScene, CurrentId);
+                    CurrentNode.Remove();
+                }
+            }
+        }
+
+        private void view_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                // 获取鼠标位置下的节点
+                TreeNode node = view.GetNodeAt(e.X, e.Y);
+                if (node != null)
+                {
+                    // 选中该节点
+                    contextMenuStrip1.Show(view, e.Location);
+                    view.SelectedNode = node;
+                    // 显示右键菜单
+                }
+            }
+        }
+
+        private void Editor_KeyDown(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Manager.History.Pop();
+            view.Nodes.Clear();
+            LoadDialogueToTreeView(view, Manager.History.Peek());
         }
     }
 }

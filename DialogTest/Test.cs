@@ -71,10 +71,6 @@ namespace DialogSystem
             get { return DialogArray.Peek().NextIndex; }
             set { DialogArray.Peek().NextIndex = value; }
         }
-        static void Debug(object t)
-        {
-            MessageBox.Show(t.ToString());
-        }
         public static void SceneInit(string _scene)
         {
             //??=如果为null才赋值 防止重复赋值
@@ -87,17 +83,6 @@ namespace DialogSystem
             DialogArray.Clear();
             DialogArray.Push(new DialogGroup((JArray)DialogScene["dia"]));
             CurrentObj = (JObject)CrtArray[0];
-        }
-
-        private static void FakeBtnClick(object s, EventArgs e)//空选项 点了没用等于继续对话
-        {
-            ChoiceBtn click = (ChoiceBtn)s;
-            foreach (var i in branch_btns)
-            {
-                i.Dispose();//关闭选项
-            }
-            branch_btns.Clear();
-            DialogEnabled = true;//恢复对话框点击
         }
         private static void ChoiceBtn_Click(object sender, EventArgs e)//选项点击 也相当于点击了一次继续
         {

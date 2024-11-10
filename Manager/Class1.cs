@@ -16,6 +16,7 @@ namespace DialogSystem
     {
         public static string DataFilePath = @"..\..\..\对话.json";
         public static JArray JsonSource = JArray.Parse(File.ReadAllText(DataFilePath));
+        public static Stack<JArray> History=new Stack<JArray>();
         public static JObject GetSceneObj(string scene)
         {
             foreach (var obj in JsonSource)
@@ -28,9 +29,10 @@ namespace DialogSystem
     }
     public enum NodeType
     {
-        OptionRoot,
+        None,
+        DlgWithOpt,
         ActionRoot,
-        Option,
+        OptionName,
         Action,
         Dialog,
         Scene,
@@ -54,15 +56,7 @@ namespace DialogSystem
         public string scene = null;
         public string scene_cap=null;
         public string scene_pgrs=null;
-        NodeType _type;
-        public NodeType NodeType
-        {
-            get { return _type; }
-            set
-            {
-
-            }
-        }
+        public NodeType NodeType=NodeType.None;
         public RichNode(string t)
         {
             Text = t;
@@ -111,7 +105,7 @@ namespace DialogSystem
         }
         public static bool Warn(object e)
         {
-            if(MessageBox.Show(e.ToString(), "⚠️", MessageBoxButtons.YesNo, MessageBoxIcon.Warning)==DialogResult.OK)
+            if(MessageBox.Show(e.ToString(), "⚠️", MessageBoxButtons.YesNo, MessageBoxIcon.Warning)==DialogResult.Yes)
                 return true;
             return false;
         }
