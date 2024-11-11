@@ -13,6 +13,8 @@ using Newtonsoft.Json.Linq;
 using System.IO;
 using static DialogSystem.Map;
 using static DialogSystem.Manager;
+using System.Reflection.Emit;
+using System.Security.Cryptography;
 
 namespace DialogSystem
 {
@@ -27,6 +29,7 @@ namespace DialogSystem
         int _option_id;//记录选项所属父级id
         bool _is_loading = true;//用于防止使用text_changed事件时在初始化阶段触发加入历史记录
         string empty_default = "未填写文本";
+        int prev_obj_index = 0;//在编辑对话数组成员时 记录上一个对象的索引
         #region 搜索和UI相关
         public Editor()
         {
@@ -142,7 +145,6 @@ namespace DialogSystem
             panel1.Left = view.Width;
         }
         #endregion
-        int prev_obj_index = 0;//在编辑数组成员时 记录上一个对象的索引
         #region 弃用
         //public static void EditSingleKey(JObject obj, string scene, string dialogID, string keyType, JToken newValue, bool _is_root = true)
         //{
@@ -338,7 +340,8 @@ namespace DialogSystem
         private void view_AfterSelect(object sender, TreeViewEventArgs e)
         {
             CurrentNode = e.Node as RichNode;
-            if(CurrentNode.chr>-1)
+            CurrentScene = CurrentNode.scene;
+            if (CurrentNode.chr>-1)
                 crt_chr = CurrentNode.chr;
             id.Text = "ID：" + CurrentNode.id.ToString();
             CurrentId= CurrentNode.id;
@@ -347,9 +350,12 @@ namespace DialogSystem
             opt_edit.Text = CurrentNode.opt;
             cap_edit.Text = CurrentNode.scene_cap;
             pgrs_slc.Value = Convert.ToInt32(CurrentNode.scene_pgrs);
-            CurrentScene = CurrentNode.scene;
+            if (CurrentNode.scene_cap != null)
+                scene_name.Text = CurrentScene;
+            else
+                scene_name.Text = "";
         }
-        #region AI生成实验
+        #region 加载树状图
         public void LoadDialogueToTreeView(TreeView treeView,JArray src)
         {
             foreach (var scene_obj in src)
@@ -396,7 +402,7 @@ namespace DialogSystem
                 dlgNode = new RichNode(txt);
                 if (dlg_obj.ContainsKey("opt"))//带opt的对话节点
                 {
-                    dlgNode.ForeColor = ThemeColor.Option;
+                    dlgNode.BackColor = ThemeColor.Option;
                     dlgNode.NodeType = NodeType.DlgWithOpt;
                 }
                 dlgNode.chr = chr;
@@ -433,7 +439,7 @@ namespace DialogSystem
                     }
                 }
             }
-            if (dlg_obj.ContainsKey("opt"))
+            if (dlg_obj.ContainsKey("opt"))//带选项对话
             {
                 JArray optArray = dlg_obj["opt"] as JArray;
                 if (optArray != null)
@@ -443,6 +449,7 @@ namespace DialogSystem
                         string optName = optObject["optn"]?.ToString();
                         RichNode optNode = new RichNode(optName);
                         optNode.opt = optName;
+                        optNode.ForeColor = Color.White;
                         optNode.BackColor = ThemeColor.Option;
                         optNode.id = id; // 设置选项节点ID
                         optNode.scene = CurrentScene;
@@ -464,56 +471,10 @@ namespace DialogSystem
 
 
         #endregion
-
-
-
-        private void textBox2_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void new_opt_Click(object sender, EventArgs e)
-        {
-            if (CurrentNode.txt != null)
-            {
-                AddOption(CurrentScene,CurrentId,empty_default);
-            }
-        }
-
-        private void act_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void txt_edit_TextChanged(object sender, EventArgs e)
-        {
-            txt_edit.Text= txt_edit.Text.Replace("\n", "");
-        }
-
-        private void txt_edit_KeyDown(object sender, KeyEventArgs e)
-        {
-            if(e.KeyCode==Keys.Enter)
-            {
-                if (CurrentNode.txt == null)
-                {
-                    txt_edit.Text = "";
-                    return;
-                }
-                CurrentNode.txt = txt_edit.Text.Replace("\n", "");
-                CurrentNode.Text = Map.ChrMap[CurrentNode.chr] + "：" + CurrentNode.txt;
-                EditDlgTxt(CurrentScene, CurrentId, CurrentNode.txt);
-            }
-        }
-
-        #region AI
+        #region 编辑节点
         private JToken FindDialogue(string scene, int id)
         {
-            JObject tar_obj=Manager.GetSceneObj(scene);
+            JObject tar_obj = Manager.GetSceneObj(scene);
             return _FindDialogueById(tar_obj["dia"], id);
         }
 
@@ -558,7 +519,7 @@ namespace DialogSystem
                 dialogue["chr"] = newCharacter;
             }
             if (!_is_loading)
-               History.Push((JArray)JsonSource.DeepClone());
+                History.Push((JArray)JsonSource.DeepClone());
         }
 
         private void EditOptName(string scene, int id, string oldOptionName, string newOptionName)
@@ -580,7 +541,7 @@ namespace DialogSystem
                 }
             }
             if (!_is_loading)
-                            History.Push((JArray)JsonSource.DeepClone());
+                History.Push((JArray)JsonSource.DeepClone());
         }
 
 
@@ -594,7 +555,7 @@ namespace DialogSystem
                 _DeleteDialogueById(sceneData["dia"], id);
             }
             if (!_is_loading)
-                            History.Push((JArray)JsonSource.DeepClone());
+                History.Push((JArray)JsonSource.DeepClone());
         }
 
         private bool _DeleteDialogueById(JToken dialogues, int id)
@@ -638,11 +599,11 @@ namespace DialogSystem
                 }
             }
             if (!_is_loading)
-                            History.Push((JArray)JsonSource.DeepClone());
+                History.Push((JArray)JsonSource.DeepClone());
         }
 
 
-        private void AddDialogue(string scene,int prevId, string newText, int newCharacter)
+        private void AddDialogue(string scene, int prevId, string newText, int newCharacter)
         {
             var prevDialogue = FindDialogue(scene, prevId);
             if (prevDialogue != null)
@@ -661,11 +622,11 @@ namespace DialogSystem
                 }
             }
             if (!_is_loading)
-               History.Push((JArray)JsonSource.DeepClone());
+                History.Push((JArray)JsonSource.DeepClone());
         }
 
 
-        private void AddOption(string scene, int id, string optionName, JArray newOptions)
+        private void AddOption(string scene, int id, string optionName)
         {
             var dialogue = FindDialogue(scene, id);
             if (dialogue != null)
@@ -675,24 +636,32 @@ namespace DialogSystem
                     dialogue["opt"] = new JArray();
                 }
                 var options = dialogue["opt"] as JArray;
+                var dia = new JArray();
+                var diaObj = new JObject
+                {
+                    ["id"] = ++NewId,
+                    ["chr"] = 0,
+                    ["txt"] = empty_default
+                };
+                dia.Add(diaObj);
                 var newOption = new JObject
                 {
                     ["optn"] = optionName,
-                    ["dia"] = newOptions
+                    ["dia"] = dia
                 };
                 options.Add(newOption);
             }
             if (!_is_loading)
-                            History.Push((JArray)JsonSource.DeepClone());
+                History.Push((JArray)JsonSource.DeepClone());
         }
 
 
-        private void EditScene(string scene,string newName)
+        private void EditScene(string scene, string newName)
         {
             var sceneData = GetSceneObj(scene);
             sceneData["scene"] = newName;
             if (!_is_loading)
-               History.Push((JArray)JsonSource.DeepClone());
+                History.Push((JArray)JsonSource.DeepClone());
         }
         private void SaveJson()
         {
@@ -701,11 +670,74 @@ namespace DialogSystem
 
         #endregion
 
+        private void new_opt_Click(object sender, EventArgs e)
+        {
+            if (CurrentNode.txt != null)
+            {
+                AddOption(CurrentScene,CurrentId,empty_default);
+                RefreshTree(JsonSource);
+            }
+        }
+        private void RefreshTree(JArray src)
+        {
+            int _id = CurrentNode.id;
+            view.Nodes.Clear();
+            LoadDialogueToTreeView(view, src);
+            CurrentNode = GetDlgNode(view.Nodes, _id);
+            CurrentNode.EnsureVisible();
+            CurrentNode.ExpandAll();
+        }
+        public static RichNode GetDlgNode(TreeNodeCollection nodes, int id)
+        {
+            foreach (TreeNode node in nodes)
+            {
+                if (node is RichNode richNode)
+                {
+                    if (richNode.id == id)
+                        return richNode;
+
+                    if (richNode.Nodes.Count > 0)
+                    {
+                        RichNode foundNode = GetDlgNode(richNode.Nodes, id);
+                        if (foundNode != null)
+                            return foundNode;
+                    }
+                }
+            }
+            return null;
+        }
+
+        private void act_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txt_edit_TextChanged(object sender, EventArgs e)
+        {
+            txt_edit.Text= txt_edit.Text.Replace("\n", "");
+        }
+
+        private void txt_edit_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Enter)
+                return;
+            if (CurrentNode.txt == null)
+                {
+                    txt_edit.Text = "";
+                    return;
+                }
+                CurrentNode.txt = txt_edit.Text.Replace("\n", "");
+                CurrentNode.Text = Map.ChrMap[CurrentNode.chr] + "：" + CurrentNode.txt;
+                EditDlgTxt(CurrentScene, CurrentId, CurrentNode.txt);
+        }
+
+
+
         private void chr_edit_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Enter)
-            {
-                if (CurrentNode.chr < 0)
+            if (e.KeyCode != Keys.Enter)
+                return;
+            if (CurrentNode.chr < 0)
                     return;
                 if (chr_edit.Text == "")
                 {
@@ -724,15 +756,14 @@ namespace DialogSystem
                     CurrentNode.chr = 0;
                 }
                 EditDlgChr(CurrentScene, CurrentId, CurrentNode.chr);
-            }
         }
 
         private void opt_edit_KeyDown(object sender, KeyEventArgs e)
         {
             if(CurrentNode.opt==null)
                 return;
-            if (e.KeyCode == Keys.Enter)
-            {
+            if (e.KeyCode != Keys.Enter)
+                return;
                 if (opt_edit.Text == "")
                 {
                     Method.Error("选项节点禁止为空！！！");
@@ -741,13 +772,8 @@ namespace DialogSystem
                 CurrentNode.Text = opt_edit.Text;
                 EditOptName(CurrentScene, CurrentId, CurrentNode.opt, opt_edit.Text);
                 CurrentNode.opt= opt_edit.Text;
-            }
         }
 
-        private void id_Click(object sender, EventArgs e)
-        {
-
-        }
 
         private void pgrs_changed(object sender, EventArgs e)
         {
@@ -793,18 +819,18 @@ namespace DialogSystem
 
         private void cap_edit_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Enter)
-            {
-                if (CurrentNode.scene==null)
+            if (e.KeyCode != Keys.Enter)
+                return;
+            if (CurrentNode.scene == null)
                     return;
-                if (cap_edit.Text == "")
+            if (cap_edit.Text == "")
                 {
                     Method.Error("角色节点禁止为空！！！");
                     cap_edit.Text = "场景";
                 }
-                CurrentNode.scene_cap = cap_edit.Text;
-                EditDlgChr(CurrentScene, CurrentId, CurrentNode.chr);
-            }
+            CurrentNode.scene_cap = cap_edit.Text;
+            var scene = GetSceneObj(CurrentScene);
+            scene["cap"] = cap_edit.Text;
         }
 
         private void chr_edit_TextChanged(object sender, EventArgs e)
@@ -830,8 +856,13 @@ namespace DialogSystem
                     CurrentNode.Remove();
                 }
             }
-            else if(CurrentNode.opt!=null)
+            else if(CurrentNode.opt!=null)//选项节点
             {
+                if(CurrentNode.Parent.Nodes.Count==1)
+                {
+                    Method.Error("选项节点至少需要一个对话");
+                    return;
+                }
                 if (Method.Warn("这将删除节点下所有内容 务必谨慎操作！！！"))
                 {
                         DeleteOption(CurrentScene, CurrentId, CurrentNode.opt);
@@ -865,9 +896,7 @@ namespace DialogSystem
                     Manager.History.Pop();
                 else
                     return;
-                view.Nodes.Clear();
-                LoadDialogueToTreeView(view, Manager.History.Peek());
-                view.ExpandAll();
+                RefreshTree(Manager.History.Peek());
                 e.Handled = true; // 防止事件继续传播
             }
         }
@@ -875,6 +904,24 @@ namespace DialogSystem
         private void button2_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            Method.Inf(JsonSource.ToString());
+        }
+
+        private void scene_name_KeyDown(object sender, KeyEventArgs e)
+        {
+            if(e.KeyCode!=Keys.Enter)
+                return;
+            if (CurrentNode.scene_cap == null)
+                return;
+            var scene=GetSceneObj(CurrentScene);
+            scene["scene"] = scene_name.Text;
+            CurrentNode.Text = scene_name.Text;
+            if (!_is_loading)
+                History.Push((JArray)JsonSource.DeepClone());
         }
     }
 }

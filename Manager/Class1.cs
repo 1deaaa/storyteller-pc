@@ -57,7 +57,7 @@ namespace DialogSystem
         public string act = null;
         public string scene = null;
         public string scene_cap=null;
-        public string scene_pgrs=null;
+        public string scene_pgrs = null;
         public NodeType NodeType=NodeType.None;
         public RichNode(string t)
         {
