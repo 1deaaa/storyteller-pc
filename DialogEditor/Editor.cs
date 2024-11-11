@@ -12,6 +12,7 @@ using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using static DialogSystem.Map;
+using static DialogSystem.Manager;
 
 namespace DialogSystem
 {
@@ -24,6 +25,8 @@ namespace DialogSystem
         public static int CurrentId = -1;
         int crt_chr = 0;
         int _option_id;//记录选项所属父级id
+        bool _is_loading = true;//用于防止使用text_changed事件时在初始化阶段触发加入历史记录
+        string empty_default = "未填写文本";
         #region 搜索和UI相关
         public Editor()
         {
@@ -67,7 +70,7 @@ namespace DialogSystem
                 SearchNode(node.Nodes, searchText, matchingOptions);
             }
         }
-
+                        
         private void UpdateListBox(List<string> options)
         {
             // 更新ListBox中的项
@@ -80,7 +83,10 @@ namespace DialogSystem
 
         private void Form1_Load_1(object sender, EventArgs e)
         {
-            Form1_SizeChanged(sender, e);
+            this.KeyPreview = true;
+            History.Push((JArray)JsonSource.DeepClone());
+            if(_is_loading)
+                _is_loading = false;
         }
 
         private void textBox1_TextChanged_1(object sender, EventArgs e)
@@ -129,10 +135,11 @@ namespace DialogSystem
 
         private void Form1_SizeChanged(object sender, EventArgs e)
         {
-            view.Size = new Size(Width / 2, Height - 40);
+            view.Size = new Size(Width / 5*3, Height - 40);
             search.Location = new Point(Width - search.Width, 0);
             search_list.Location = new Point(search.Left, search.Height + 4);
             search_list.Size = new Size(search.Width, Height - 40 - 4);
+            panel1.Left = view.Width;
         }
         #endregion
         int prev_obj_index = 0;//在编辑数组成员时 记录上一个对象的索引
@@ -470,9 +477,12 @@ namespace DialogSystem
 
         }
 
-        private void opt_Click(object sender, EventArgs e)
+        private void new_opt_Click(object sender, EventArgs e)
         {
-
+            if (CurrentNode.txt != null)
+            {
+                AddOption(CurrentScene,CurrentId,empty_default);
+            }
         }
 
         private void act_Click(object sender, EventArgs e)
@@ -482,17 +492,22 @@ namespace DialogSystem
 
         private void txt_edit_TextChanged(object sender, EventArgs e)
         {
-            if (CurrentNode.txt == null)
-                return;
-            txt_edit.Text = txt_edit.Text.Replace("\n", "");
-            CurrentNode.txt = txt_edit.Text;
-            CurrentNode.Text = Map.ChrMap[CurrentNode.chr] + "：" + CurrentNode.txt;
-            EditDlgTxt(CurrentScene, CurrentId, CurrentNode.txt);
+            txt_edit.Text= txt_edit.Text.Replace("\n", "");
         }
 
         private void txt_edit_KeyDown(object sender, KeyEventArgs e)
         {
-
+            if(e.KeyCode==Keys.Enter)
+            {
+                if (CurrentNode.txt == null)
+                {
+                    txt_edit.Text = "";
+                    return;
+                }
+                CurrentNode.txt = txt_edit.Text.Replace("\n", "");
+                CurrentNode.Text = Map.ChrMap[CurrentNode.chr] + "：" + CurrentNode.txt;
+                EditDlgTxt(CurrentScene, CurrentId, CurrentNode.txt);
+            }
         }
 
         #region AI
@@ -532,6 +547,8 @@ namespace DialogSystem
             {
                 dialogue["txt"] = newText;
             }
+            if (!_is_loading)
+                History.Push((JArray)JsonSource.DeepClone());
         }
         private void EditDlgChr(string scene, int id, int newCharacter)
         {
@@ -540,6 +557,8 @@ namespace DialogSystem
             {
                 dialogue["chr"] = newCharacter;
             }
+            if (!_is_loading)
+               History.Push((JArray)JsonSource.DeepClone());
         }
 
         private void EditOptName(string scene, int id, string oldOptionName, string newOptionName)
@@ -560,6 +579,8 @@ namespace DialogSystem
                     }
                 }
             }
+            if (!_is_loading)
+                            History.Push((JArray)JsonSource.DeepClone());
         }
 
 
@@ -572,6 +593,8 @@ namespace DialogSystem
             {
                 _DeleteDialogueById(sceneData["dia"], id);
             }
+            if (!_is_loading)
+                            History.Push((JArray)JsonSource.DeepClone());
         }
 
         private bool _DeleteDialogueById(JToken dialogues, int id)
@@ -614,6 +637,8 @@ namespace DialogSystem
                     }
                 }
             }
+            if (!_is_loading)
+                            History.Push((JArray)JsonSource.DeepClone());
         }
 
 
@@ -635,6 +660,8 @@ namespace DialogSystem
                     dialogues.Insert(prev_obj_index + 1, newDialogue);
                 }
             }
+            if (!_is_loading)
+               History.Push((JArray)JsonSource.DeepClone());
         }
 
 
@@ -655,12 +682,17 @@ namespace DialogSystem
                 };
                 options.Add(newOption);
             }
+            if (!_is_loading)
+                            History.Push((JArray)JsonSource.DeepClone());
         }
 
 
         private void EditScene(string scene,string newName)
         {
-            
+            var sceneData = GetSceneObj(scene);
+            sceneData["scene"] = newName;
+            if (!_is_loading)
+               History.Push((JArray)JsonSource.DeepClone());
         }
         private void SaveJson()
         {
@@ -717,7 +749,7 @@ namespace DialogSystem
 
         }
 
-        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        private void pgrs_changed(object sender, EventArgs e)
         {
             if (CurrentNode == null)
                 return;
@@ -728,7 +760,9 @@ namespace DialogSystem
                 return;
             }
             CurrentNode.scene_pgrs=pgrs_slc.Value.ToString();
-            Manager.JsonSource[CurrentScene]["pgrs"]= pgrs_slc.Value;
+            JsonSource[CurrentScene]["pgrs"]= pgrs_slc.Value;
+            if (!_is_loading)
+               History.Push((JArray)JsonSource.DeepClone());
         }
 
         private void opt_edit_TextChanged(object sender, EventArgs e)
@@ -739,18 +773,18 @@ namespace DialogSystem
         private void button1_Click_1(object sender, EventArgs e)
         {
 
-            Method.Inf(Manager.JsonSource.ToString());
+            Method.Inf(JsonSource.ToString());
         }
 
-        private void dia_Click(object sender, EventArgs e)
+        private void new_dia_Click(object sender, EventArgs e)
         {
             if (CurrentNode.txt == null)
                 return;
-            AddDialogue(CurrentScene, CurrentId, "", 0);
-            RichNode rn= new RichNode("");
+            AddDialogue(CurrentScene, CurrentId, empty_default, 0);//json解析时会忽略空字符串
+            RichNode rn= new RichNode(empty_default);
             rn.id = NewId;
             rn.chr = crt_chr;
-            rn.txt = "";
+            rn.txt = empty_default;
             rn.scene = CurrentScene;
             CurrentNode.Parent.Nodes.Insert(prev_obj_index+1,rn);
             view.SelectedNode = rn;
@@ -780,11 +814,11 @@ namespace DialogSystem
 
         private void 删除节点ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if(CurrentNode.txt!=null)
+            if(CurrentNode.txt!=null)//对话节点
             {
                 if (CurrentNode.NodeType == NodeType.DlgWithOpt)//有子节点则进行二次确认
                 {
-                    if (Method.Warn("这将删除所有节点下所有内容 务必谨慎操作！！！"))
+                    if (Method.Warn("这将删除所节点下所有内容 务必谨慎操作！！！"))
                     {
                         DeleteDialogue(CurrentScene, CurrentId);
                         CurrentNode.Remove();
@@ -794,6 +828,14 @@ namespace DialogSystem
                 {
                     DeleteDialogue(CurrentScene, CurrentId);
                     CurrentNode.Remove();
+                }
+            }
+            else if(CurrentNode.opt!=null)
+            {
+                if (Method.Warn("这将删除节点下所有内容 务必谨慎操作！！！"))
+                {
+                        DeleteOption(CurrentScene, CurrentId, CurrentNode.opt);
+                        CurrentNode.Remove(); 
                 }
             }
         }
@@ -816,14 +858,23 @@ namespace DialogSystem
 
         private void Editor_KeyDown(object sender, KeyEventArgs e)
         {
-
+            if (e.Control && e.KeyCode == Keys.Z)
+            {
+                // 执行撤销操作
+                if (Manager.History.Count > 1)
+                    Manager.History.Pop();
+                else
+                    return;
+                view.Nodes.Clear();
+                LoadDialogueToTreeView(view, Manager.History.Peek());
+                view.ExpandAll();
+                e.Handled = true; // 防止事件继续传播
+            }
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            Manager.History.Pop();
-            view.Nodes.Clear();
-            LoadDialogueToTreeView(view, Manager.History.Peek());
+
         }
     }
 }

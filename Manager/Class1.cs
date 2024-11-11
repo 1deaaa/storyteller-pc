@@ -23,6 +23,7 @@ namespace DialogSystem
             {
                 if (obj["scene"].ToString() == scene)
                     return obj as JObject;
+
             }
             return null;
         }
@@ -42,8 +43,9 @@ namespace DialogSystem
     {
         public static Color Option = Color.LimeGreen;
         public static Color Action = Color.Orange;
-        public static Color Dialog = Color.BlueViolet;
+        public static Color Dialog = Color.CornflowerBlue;
         public static Color Branch = Color.SkyBlue;
+        public static Color Next = Color.BlueViolet;
     }
     public class RichNode : TreeNode
     {
