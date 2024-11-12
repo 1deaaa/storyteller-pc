@@ -53,11 +53,11 @@
             this.spk.BackColor = System.Drawing.Color.PaleTurquoise;
             this.spk.Font = new System.Drawing.Font("微软雅黑 Light", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.spk.ForeColor = System.Drawing.Color.SeaGreen;
-            this.spk.Location = new System.Drawing.Point(470, 495);
+            this.spk.Location = new System.Drawing.Point(459, 495);
             this.spk.Name = "spk";
-            this.spk.Size = new System.Drawing.Size(138, 38);
+            this.spk.Size = new System.Drawing.Size(155, 38);
             this.spk.TabIndex = 1;
-            this.spk.Text = "角色";
+            this.spk.Text = "讲解员视角";
             this.spk.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label1
@@ -81,7 +81,7 @@
             this.cap.Name = "cap";
             this.cap.Size = new System.Drawing.Size(279, 38);
             this.cap.TabIndex = 3;
-            this.cap.Text = "任务提示";
+            this.cap.Text = "导航栏提示";
             this.cap.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.cap.Click += new System.EventHandler(this.label2_Click);
             // 

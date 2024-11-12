@@ -23,7 +23,7 @@ namespace DialogSystem
 
         private void MainUI_Load(object sender, EventArgs e)
         {
-            Dialog.SceneInit("开场场景");
+            Dialog.SceneInit(Manager.JsonSource[0]["scene"].ToString());
             Dialog.DisplayOne(Dialog.CurrentObj, this);
         }
 
@@ -52,9 +52,9 @@ namespace DialogSystem
         //对于vs调试显示的json数据 外层都被加了一组{} 实际上是不存在的
         public static int Choice = 0;//注意 从1开始！！！
         public static int CurrentGroupObjIndex = 0;//目前遍历到的组内对话对象
+        public static int scene_index = 0;
         static Stack<DialogGroup> DialogArray=new();
         public static JObject CurrentObj;//目前遍历到的对话对象
-        public static List<JObject> MainObj = new();//每个场景下的主线对话对象 默认下一组就是如此
         static bool waitForChoice = false;
         public static bool EndDialog = false;//下一次点击直接关闭对话
         static string NextDialog = null;//指定next所指向的下一个对话场景 为null表示不跳转
@@ -75,7 +75,6 @@ namespace DialogSystem
         {
             //??=如果为null才赋值 防止重复赋值
             DialogScene = Manager.GetSceneObj(_scene);//根（场景）键值对的值为数组  Token代表任意数据节点 Prop代表键值对 Object代表{xxx}
-            MainObj.Clear();
             CurrentGroupObjIndex = 0;
             NextDialog = null;
             waitForChoice = false;
@@ -191,7 +190,13 @@ namespace DialogSystem
                     DialogArray.Pop();
                     if (DialogArray.Count == 0)//场景所有对话结束
                     {
-                        EndDialog = true;//下次点击 在事件开头直接退出
+                        if(scene_index>=Manager.JsonSource.Count-1)
+                        { 
+                            EndDialog = true;
+                            return;
+                        }
+                        SceneInit(Manager.JsonSource[++scene_index]["scene"].ToString());
+                        //下次点击 在事件开头直接退出
                         return;
                     }
                 }

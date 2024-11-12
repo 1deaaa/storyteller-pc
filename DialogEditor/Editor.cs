@@ -350,6 +350,7 @@ namespace DialogSystem
             opt_edit.Text = CurrentNode.opt;
             cap_edit.Text = CurrentNode.scene_cap;
             pgrs_slc.Value = Convert.ToInt32(CurrentNode.scene_pgrs);
+            next_edit.Text = CurrentNode.next;
             if (CurrentNode.scene_cap != null)
                 scene_name.Text = CurrentScene;
             else
@@ -822,20 +823,20 @@ namespace DialogSystem
         {
             if (CurrentNode.NodeType == NodeType.ActItem && CurrentNode.NodeType == NodeType.Next)
                 return;
-            RichNode rn = new RichNode(empty_default);
+            RichNode rn = new RichNode("新选项");
             rn.id = NewId;
             rn.chr = crt_chr;
-            rn.txt = empty_default;
+            rn.txt = "新选项";
             rn.scene = CurrentScene;
             switch(CurrentNode.NodeType){
                 case NodeType.Dialog:
-                    AddDialogue(CurrentScene, CurrentId, empty_default, 0);
+                    AddDialogue(CurrentScene, CurrentId, "新选项", 0);
                     CurrentNode.Parent.Nodes.Insert(prev_obj_index + 1, rn);
                     break;
                 case NodeType.OptItem:
                 case NodeType.Scene:
                     RichNode richNode = (RichNode)CurrentNode.Nodes[CurrentNode.Nodes.Count - 1];
-                    AddDialogue(CurrentScene, richNode.id, empty_default, 0);
+                    AddDialogue(CurrentScene, richNode.id, "新选项", 0);
                     CurrentNode.Nodes.Add(rn);
                     break;
             }
@@ -895,6 +896,17 @@ namespace DialogSystem
                         CurrentNode.Remove(); 
                 }
             }
+            else if (CurrentNode.NodeType == NodeType.Scene)//场景节点
+            {
+                if (Method.Warn("这将删除场景下所有对话 务必谨慎操作！！！"))
+                {
+                    JsonSource.Remove(GetSceneObj(CurrentScene));
+                    if(_is_loading)
+                        History.Push((JArray)JsonSource.DeepClone());
+                    CurrentNode.Remove();
+                }
+            }
+            
         }
 
         private void view_MouseUp(object sender, MouseEventArgs e)
@@ -956,9 +968,63 @@ namespace DialogSystem
                 return;
             var scene = new JObject
             {
-
+                ["scene"] = "新场景",
+                ["cap"] = "新任务指引",
+                ["pgrs"] = 0,
+                ["dia"] = new JArray()
             };
-            JsonSource.Insert(JsonSource.IndexOf(GetSceneObj(CurrentScene)),);
+            JsonSource.Insert(JsonSource.IndexOf(GetSceneObj(CurrentScene)),scene);
+            RichNode richNode = new RichNode("新场景");
+            richNode.scene = "新场景";
+            richNode.scene_cap = "新任务指引";
+            richNode.scene_pgrs = "0";
+            richNode.NodeType = NodeType.Scene;
+            view.Nodes.Insert(view.Nodes.IndexOf(CurrentNode)+1, richNode);
+            view.SelectedNode = richNode;
+            richNode.EnsureVisible();
+        }
+
+        private void chr_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void new_next_Click(object sender, EventArgs e)
+        {
+            if (CurrentNode.txt==null||CurrentNode.next!=null)
+                return;
+            var obj=FindDialogue(CurrentScene, CurrentId);
+            obj["next"] = next_edit.Text;
+            RichNode richNode = new RichNode("🚀" + CurrentNode.scene) { NodeType = NodeType.Next };
+            richNode.next=CurrentNode.scene;
+            richNode.scene = CurrentScene;
+            richNode.id = CurrentId;
+            CurrentNode.Nodes.Add(richNode);
+            richNode.EnsureVisible();
+        }
+
+        private void next_edit_KeyDown(object sender, KeyEventArgs e)
+        {
+            if(e.KeyCode!= Keys.Enter)
+                return;
+            if(CurrentNode.next==null)
+                return;
+            List<string> scenes = new List<string>();
+            foreach (var scene in JsonSource)
+            {
+                scenes.Add(scene["scene"].ToString());
+            }
+            if (!scenes.Contains(next_edit.Text))
+            {
+                Method.Error("不存在的场景");
+                next_edit.ForeColor = Color.Red;
+                return;
+            }
+            var obj = FindDialogue(CurrentScene, CurrentId);
+            obj["next"]= next_edit.Text;
+            CurrentNode.next = next_edit.Text;
+            CurrentNode.Text = "🚀" + CurrentNode.next;
+            next_edit.ForeColor = Color.Black;
         }
     }
 }

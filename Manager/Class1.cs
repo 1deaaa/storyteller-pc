@@ -23,7 +23,6 @@ namespace DialogSystem
             {
                 if (obj["scene"].ToString() == scene)
                     return obj as JObject;
-
             }
             return null;
         }
@@ -91,7 +90,7 @@ namespace DialogSystem
                         BackColor = ThemeColor.Scene;
                         break;
                     case NodeType.Next:
-                        BackColor = ThemeColor.Next;
+                        ForeColor = ThemeColor.Next;
                         break;
                     default:
                         break;
