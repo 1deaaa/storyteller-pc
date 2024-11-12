@@ -28,7 +28,7 @@ namespace DialogSystem
         int crt_chr = 0;
         int _option_id;//记录选项所属父级id
         bool _is_loading = true;//用于防止使用text_changed事件时在初始化阶段触发加入历史记录
-        string empty_default = "未填写文本";
+        string empty_default = "未填写文本";//json解析时会忽略空字符串
         int prev_obj_index = 0;//在编辑对话数组成员时 记录上一个对象的索引
         #region 搜索和UI相关
         public Editor()
@@ -401,16 +401,40 @@ namespace DialogSystem
             {
                 dlgNode = new RichNode(txt);
                 if (dlg_obj.ContainsKey("opt"))//带opt的对话节点
-                {
-                    dlgNode.BackColor = ThemeColor.Option;
                     dlgNode.NodeType = NodeType.DlgWithOpt;
-                }
+                else//普通对话节点
+                    dlgNode.NodeType = NodeType.Dialog;
                 dlgNode.chr = chr;
                 dlgNode.txt = txt;
                 dlgNode.id = id;
                 dlgNode.scene = CurrentScene;
                 dlgNode.Text = Map.ChrMap[chr] + "：" + dlgNode.txt;
                 parentNode.Nodes.Add(dlgNode);
+            }
+            if (dlg_obj.ContainsKey("opt"))//带选项对话
+            {
+                JArray optArray = dlg_obj["opt"] as JArray;
+                if (optArray != null)
+                {
+                    foreach (JObject optObject in optArray)
+                    {
+                        string optName = optObject["optn"]?.ToString();
+                        RichNode optItem = new RichNode("🚩"+optName);
+                        optItem.opt = optName;
+                        optItem.NodeType = NodeType.OptItem;
+                        optItem.id = id; // 设置选项节点ID
+                        optItem.scene = CurrentScene;
+                        (dlgNode ?? parentNode).Nodes.Add(optItem); // 为空返回parentnode
+                        JArray optDlgArray = optObject["dia"] as JArray;
+                        if (optDlgArray != null)
+                        {
+                            foreach (var opt_dlg in optDlgArray)
+                            {
+                                AddDialogueNode(opt_dlg as JObject, optItem);
+                            }
+                        }
+                    }
+                }
             }
             if (dlg_obj.ContainsKey("act"))
             {
@@ -423,8 +447,7 @@ namespace DialogSystem
                         RichNode bgmNode = new RichNode("🎵" + bgm);
                         bgmNode.id = id;
                         bgmNode.scene = CurrentScene;
-                        Method.Music(bgm);
-                        bgmNode.BackColor = ThemeColor.Action;
+                        bgmNode.NodeType = NodeType.ActItem;
                         (dlgNode ?? parentNode).Nodes.Add(bgmNode);
                     }
 
@@ -434,34 +457,8 @@ namespace DialogSystem
                         RichNode funNode = new RichNode("⚡" + fun);
                         funNode.id = id;
                         funNode.scene = CurrentScene;
-                        funNode.BackColor = ThemeColor.Action;
+                        funNode.NodeType = NodeType.ActItem;
                         (dlgNode ?? parentNode).Nodes.Add(funNode);
-                    }
-                }
-            }
-            if (dlg_obj.ContainsKey("opt"))//带选项对话
-            {
-                JArray optArray = dlg_obj["opt"] as JArray;
-                if (optArray != null)
-                {
-                    foreach (JObject optObject in optArray)
-                    {
-                        string optName = optObject["optn"]?.ToString();
-                        RichNode optNode = new RichNode(optName);
-                        optNode.opt = optName;
-                        optNode.ForeColor = Color.White;
-                        optNode.BackColor = ThemeColor.Option;
-                        optNode.id = id; // 设置选项节点ID
-                        optNode.scene = CurrentScene;
-                        (dlgNode ?? parentNode).Nodes.Add(optNode); // 为空返回parentnode
-                        JArray optDlgArray = optObject["dia"] as JArray;
-                        if (optDlgArray != null)
-                        {
-                            foreach (var opt_dlg in optDlgArray)
-                            {
-                                AddDialogueNode(opt_dlg as JObject, optNode);
-                            }
-                        }
                     }
                 }
             }
@@ -675,7 +672,22 @@ namespace DialogSystem
             if (CurrentNode.txt != null)
             {
                 AddOption(CurrentScene,CurrentId,empty_default);
-                RefreshTree(JsonSource);
+                CurrentNode.NodeType = NodeType.DlgWithOpt;
+                RichNode richNode = new RichNode("🚩" + empty_default);
+                richNode.id = CurrentId;
+                richNode.scene = CurrentScene;
+                richNode.opt = empty_default;
+                richNode.NodeType = NodeType.OptItem;
+                RichNode _dlg = new RichNode(empty_default);
+                _dlg.NodeType = NodeType.Dialog;
+                _dlg.id = NewId;
+                _dlg.scene = CurrentScene;
+                _dlg.txt = empty_default;
+                _dlg.chr = crt_chr;
+                CurrentNode.Nodes.Add(richNode);
+                richNode.Nodes.Add(_dlg);
+                view.SelectedNode = _dlg;
+                _dlg.EnsureVisible();
             }
         }
         private void RefreshTree(JArray src)
@@ -683,7 +695,11 @@ namespace DialogSystem
             int _id = CurrentNode.id;
             view.Nodes.Clear();
             LoadDialogueToTreeView(view, src);
-            CurrentNode = GetDlgNode(view.Nodes, _id);
+            RichNode richNode=GetDlgNode(view.Nodes, _id);
+            if(richNode==null)
+                CurrentNode=view.Nodes[0] as RichNode;
+            else
+                CurrentNode = richNode;
             CurrentNode.EnsureVisible();
             CurrentNode.ExpandAll();
         }
@@ -769,7 +785,7 @@ namespace DialogSystem
                     Method.Error("选项节点禁止为空！！！");
                     return;
                 }
-                CurrentNode.Text = opt_edit.Text;
+                CurrentNode.Text = "🚩"+opt_edit.Text;
                 EditOptName(CurrentScene, CurrentId, CurrentNode.opt, opt_edit.Text);
                 CurrentNode.opt= opt_edit.Text;
         }
@@ -804,15 +820,25 @@ namespace DialogSystem
 
         private void new_dia_Click(object sender, EventArgs e)
         {
-            if (CurrentNode.txt == null)
+            if (CurrentNode.NodeType == NodeType.ActItem && CurrentNode.NodeType == NodeType.Next)
                 return;
-            AddDialogue(CurrentScene, CurrentId, empty_default, 0);//json解析时会忽略空字符串
-            RichNode rn= new RichNode(empty_default);
+            RichNode rn = new RichNode(empty_default);
             rn.id = NewId;
             rn.chr = crt_chr;
             rn.txt = empty_default;
             rn.scene = CurrentScene;
-            CurrentNode.Parent.Nodes.Insert(prev_obj_index+1,rn);
+            switch(CurrentNode.NodeType){
+                case NodeType.Dialog:
+                    AddDialogue(CurrentScene, CurrentId, empty_default, 0);
+                    CurrentNode.Parent.Nodes.Insert(prev_obj_index + 1, rn);
+                    break;
+                case NodeType.OptItem:
+                case NodeType.Scene:
+                    RichNode richNode = (RichNode)CurrentNode.Nodes[CurrentNode.Nodes.Count - 1];
+                    AddDialogue(CurrentScene, richNode.id, empty_default, 0);
+                    CurrentNode.Nodes.Add(rn);
+                    break;
+            }
             view.SelectedNode = rn;
             txt_edit.Focus();
         }
@@ -840,7 +866,7 @@ namespace DialogSystem
 
         private void 删除节点ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if(CurrentNode.txt!=null)//对话节点
+            if (CurrentNode.txt!=null)//对话节点
             {
                 if (CurrentNode.NodeType == NodeType.DlgWithOpt)//有子节点则进行二次确认
                 {
@@ -856,16 +882,16 @@ namespace DialogSystem
                     CurrentNode.Remove();
                 }
             }
-            else if(CurrentNode.opt!=null)//选项节点
+            else if(CurrentNode.NodeType==NodeType.OptItem)//选项节点
             {
-                if(CurrentNode.Parent.Nodes.Count==1)
+                if (Method.Warn("这将删除选项下所有对话 务必谨慎操作！！！"))
                 {
-                    Method.Error("选项节点至少需要一个对话");
-                    return;
-                }
-                if (Method.Warn("这将删除节点下所有内容 务必谨慎操作！！！"))
-                {
-                        DeleteOption(CurrentScene, CurrentId, CurrentNode.opt);
+                    DeleteOption(CurrentScene, CurrentId, CurrentNode.opt);
+                    if(CurrentNode.Parent.Nodes.Count==1)//全部移除 还原父节点
+                    {
+                        RichNode rn = (RichNode)CurrentNode.Parent;
+                        rn.NodeType = NodeType.Dialog;
+                    }
                         CurrentNode.Remove(); 
                 }
             }
@@ -922,6 +948,17 @@ namespace DialogSystem
             CurrentNode.Text = scene_name.Text;
             if (!_is_loading)
                 History.Push((JArray)JsonSource.DeepClone());
+        }
+
+        private void new_scene_Click(object sender, EventArgs e)
+        {
+            if (CurrentNode.NodeType != NodeType.Scene)
+                return;
+            var scene = new JObject
+            {
+
+            };
+            JsonSource.Insert(JsonSource.IndexOf(GetSceneObj(CurrentScene)),);
         }
     }
 }

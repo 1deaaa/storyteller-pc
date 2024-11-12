@@ -32,9 +32,9 @@ namespace DialogSystem
     {
         None,
         DlgWithOpt,
-        ActionRoot,
-        OptionName,
-        Action,
+        DlgWithAct,
+        OptItem,
+        ActItem,
         Dialog,
         Scene,
         Next,
@@ -43,22 +43,61 @@ namespace DialogSystem
     {
         public static Color Option = Color.LimeGreen;
         public static Color Action = Color.Orange;
-        public static Color Dialog = Color.CornflowerBlue;
+        public static Color Dialog = Color.White;
         public static Color Branch = Color.SkyBlue;
         public static Color Next = Color.BlueViolet;
+        public static Color Scene = Color.DarkTurquoise;
     }
     public class RichNode : TreeNode
     {
         public int id = -1;
+        public string scene = null;
+        //以上是每个节点都有的属性
         public int chr = -1;
         public string txt = null;
         public string next = null;
+        //dlg节点的属性
         public string opt = null;
+        //opt名字节点的属性
         public string act = null;
-        public string scene = null;
         public string scene_cap=null;
         public string scene_pgrs = null;
-        public NodeType NodeType=NodeType.None;
+        public NodeType _NodeType=NodeType.None;
+        public NodeType NodeType
+        {
+            get { return _NodeType; }
+            set
+            {
+                _NodeType = value;
+                switch (value)
+                {
+                    case NodeType.DlgWithOpt:
+                        BackColor = ThemeColor.Option;
+                        break;
+                    case NodeType.DlgWithAct:
+                        BackColor = ThemeColor.Action;
+                        break;
+                    case NodeType.OptItem:
+                        ForeColor = ThemeColor.Option;
+                        break;
+                    case NodeType.ActItem:
+                        ForeColor = ThemeColor.Action;
+                        break;
+                    case NodeType.Dialog:
+                        BackColor= ThemeColor.Dialog;
+                        opt = null;
+                        break;
+                    case NodeType.Scene:
+                        BackColor = ThemeColor.Scene;
+                        break;
+                    case NodeType.Next:
+                        BackColor = ThemeColor.Next;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
         public RichNode(string t)
         {
             Text = t;
@@ -78,9 +117,9 @@ namespace DialogSystem
         public static Dictionary<int, string> ChrMap= new Dictionary<int, string>()
         {
                     #region 角色映射表
-                    {0,"我" },
-                    {1,"心声" },
-                    { 2,"可可酱"}
+                    {0,"引导" },
+                    {1,"说明" },
+                    {2,"注释"}
                     #endregion 角色映射表
         };
     }
