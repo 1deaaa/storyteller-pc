@@ -15,6 +15,7 @@ using static DialogSystem.Map;
 using static DialogSystem.Manager;
 using System.Reflection.Emit;
 using System.Security.Cryptography;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace DialogSystem
 {
@@ -365,6 +366,7 @@ namespace DialogSystem
                 CurrentScene= scene_obj["scene"].ToString();
                 sceneNode.scene = CurrentScene;
                 sceneNode.scene_cap = scene_obj["cap"]?.ToString();
+                sceneNode.scene_pgrs = scene_obj["pgrs"]?.ToString();
                 sceneNode.NodeType = NodeType.Scene;
                 treeView.Nodes.Add(sceneNode);
                 JObject dialogueObject = scene_obj as JObject;
@@ -603,6 +605,19 @@ namespace DialogSystem
 
         private void AddDialogue(string scene, int prevId, string newText, int newCharacter)
         {
+            if(prevId==0)//id为0 场景节点
+            {
+                JArray _j = (JArray)GetSceneObj(scene)["dia"];
+                _j.Add(new JObject
+                {
+                    ["id"] = ++NewId,
+                    ["chr"] = newCharacter,
+                    ["txt"] = newText
+                });
+                if (!_is_loading)
+                    History.Push((JArray)JsonSource.DeepClone());
+                return;
+            }
             var prevDialogue = FindDialogue(scene, prevId);
             if (prevDialogue != null)
             {
@@ -670,14 +685,14 @@ namespace DialogSystem
 
         private void new_opt_Click(object sender, EventArgs e)
         {
-            if (CurrentNode.txt != null)
+            if (CurrentNode.txt != null)//只在dlg下创建选项
             {
                 AddOption(CurrentScene,CurrentId,empty_default);
                 CurrentNode.NodeType = NodeType.DlgWithOpt;
-                RichNode richNode = new RichNode("🚩" + empty_default);
+                RichNode richNode = new RichNode("🚩" + "新选项");
                 richNode.id = CurrentId;
                 richNode.scene = CurrentScene;
-                richNode.opt = empty_default;
+                richNode.opt = "新选项";
                 richNode.NodeType = NodeType.OptItem;
                 RichNode _dlg = new RichNode(empty_default);
                 _dlg.NodeType = NodeType.Dialog;
@@ -803,7 +818,7 @@ namespace DialogSystem
                 return;
             }
             CurrentNode.scene_pgrs=pgrs_slc.Value.ToString();
-            JsonSource[CurrentScene]["pgrs"]= pgrs_slc.Value;
+            GetSceneObj(CurrentScene)["pgrs"] = pgrs_slc.Value;
             if (!_is_loading)
                History.Push((JArray)JsonSource.DeepClone());
         }
@@ -823,21 +838,30 @@ namespace DialogSystem
         {
             if (CurrentNode.NodeType == NodeType.ActItem && CurrentNode.NodeType == NodeType.Next)
                 return;
-            RichNode rn = new RichNode("新选项");
+            RichNode rn = new RichNode(empty_default);
             rn.id = NewId;
             rn.chr = crt_chr;
-            rn.txt = "新选项";
+            rn.txt = empty_default;
             rn.scene = CurrentScene;
             switch(CurrentNode.NodeType){
                 case NodeType.Dialog:
-                    AddDialogue(CurrentScene, CurrentId, "新选项", 0);
+                    AddDialogue(CurrentScene, CurrentId, empty_default, 0);
                     CurrentNode.Parent.Nodes.Insert(prev_obj_index + 1, rn);
                     break;
                 case NodeType.OptItem:
                 case NodeType.Scene:
-                    RichNode richNode = (RichNode)CurrentNode.Nodes[CurrentNode.Nodes.Count - 1];
-                    AddDialogue(CurrentScene, richNode.id, "新选项", 0);
-                    CurrentNode.Nodes.Add(rn);
+                    RichNode richNode;
+                    if (CurrentNode.Nodes.Count - 1>-1)
+                    {
+                        richNode = (RichNode)CurrentNode.Nodes[CurrentNode.Nodes.Count - 1];
+                        AddDialogue(CurrentScene, richNode.id, empty_default, 0);
+                        CurrentNode.Nodes.Add(rn);
+                    }
+                    else
+                    {
+                        AddDialogue(CurrentScene, 0, empty_default, 0);
+                        CurrentNode.Nodes.Add(rn);
+                    }
                     break;
             }
             view.SelectedNode = rn;
@@ -864,10 +888,9 @@ namespace DialogSystem
         {
 
         }
-
-        private void 删除节点ToolStripMenuItem_Click(object sender, EventArgs e)
+        void DeleteNode()
         {
-            if (CurrentNode.txt!=null)//对话节点
+            if (CurrentNode.txt != null)//对话节点
             {
                 if (CurrentNode.NodeType == NodeType.DlgWithOpt)//有子节点则进行二次确认
                 {
@@ -883,17 +906,17 @@ namespace DialogSystem
                     CurrentNode.Remove();
                 }
             }
-            else if(CurrentNode.NodeType==NodeType.OptItem)//选项节点
+            else if (CurrentNode.NodeType == NodeType.OptItem)//选项节点
             {
                 if (Method.Warn("这将删除选项下所有对话 务必谨慎操作！！！"))
                 {
                     DeleteOption(CurrentScene, CurrentId, CurrentNode.opt);
-                    if(CurrentNode.Parent.Nodes.Count==1)//全部移除 还原父节点
+                    if (CurrentNode.Parent.Nodes.Count == 1)//全部移除 还原父节点
                     {
                         RichNode rn = (RichNode)CurrentNode.Parent;
                         rn.NodeType = NodeType.Dialog;
                     }
-                        CurrentNode.Remove(); 
+                    CurrentNode.Remove();
                 }
             }
             else if (CurrentNode.NodeType == NodeType.Scene)//场景节点
@@ -901,12 +924,35 @@ namespace DialogSystem
                 if (Method.Warn("这将删除场景下所有对话 务必谨慎操作！！！"))
                 {
                     JsonSource.Remove(GetSceneObj(CurrentScene));
-                    if(_is_loading)
+                    if (_is_loading)
                         History.Push((JArray)JsonSource.DeepClone());
                     CurrentNode.Remove();
                 }
             }
-            
+            else if(CurrentNode.act!=null)
+            {
+                if (Method.Warn("这将删除行为节点 务必谨慎操作！！！"))
+                {
+                    JObject _j= (JObject)FindDialogue(CurrentScene, CurrentId)["act"]; 
+                    _j.Remove();
+                    if (_is_loading)
+                        History.Push((JArray)JsonSource.DeepClone());
+                    CurrentNode.Remove();
+                }
+            }
+            else if(CurrentNode.next!=null)
+            {
+                JObject _j = (JObject)FindDialogue(CurrentScene, CurrentId)["next"];
+                _j.Remove();
+                if (_is_loading)
+                    History.Push((JArray)JsonSource.DeepClone());
+                CurrentNode.Remove();
+            }
+        }
+
+        private void 删除节点ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DeleteNode();
         }
 
         private void view_MouseUp(object sender, MouseEventArgs e)
@@ -915,11 +961,15 @@ namespace DialogSystem
             {
                 // 获取鼠标位置下的节点
                 TreeNode node = view.GetNodeAt(e.X, e.Y);
+                view.SelectedNode = node;
                 if (node != null)
                 {
-                    // 选中该节点
-                    contextMenuStrip1.Show(view, e.Location);
-                    view.SelectedNode = node;
+                    if(CurrentNode.NodeType==NodeType.Scene)
+                        sceneMenu.Show(view, e.Location);
+                    else if(CurrentNode.txt!=null)
+                        dlgMenu.Show(view, e.Location);
+                    else if (true)
+                        delMenu.Show(view, e.Location);
                     // 显示右键菜单
                 }
             }
@@ -989,12 +1039,18 @@ namespace DialogSystem
 
         }
 
+        private void EditNext(string scene,int id)
+        {
+            var obj = FindDialogue(scene,id);
+            obj["next"] = CurrentScene;
+            if (!_is_loading)
+                History.Push((JArray)JsonSource.DeepClone());
+        }
         private void new_next_Click(object sender, EventArgs e)
         {
             if (CurrentNode.txt==null||CurrentNode.next!=null)
                 return;
-            var obj=FindDialogue(CurrentScene, CurrentId);
-            obj["next"] = next_edit.Text;
+            EditNext(CurrentScene,CurrentId);
             RichNode richNode = new RichNode("🚀" + CurrentNode.scene) { NodeType = NodeType.Next };
             richNode.next=CurrentNode.scene;
             richNode.scene = CurrentScene;
@@ -1020,11 +1076,40 @@ namespace DialogSystem
                 next_edit.ForeColor = Color.Red;
                 return;
             }
-            var obj = FindDialogue(CurrentScene, CurrentId);
-            obj["next"]= next_edit.Text;
+            EditNext(CurrentScene, CurrentId);
             CurrentNode.next = next_edit.Text;
             CurrentNode.Text = "🚀" + CurrentNode.next;
             next_edit.ForeColor = Color.Black;
+        }
+
+        private void 创建对话ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new_dia_Click(sender,e);
+        }
+
+        private void 创建场景ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new_scene_Click(sender, e);
+        }
+
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            DeleteNode();
+        }
+
+        private void 创建对话ToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            new_dia_Click(sender,e);
+        }
+
+        private void 创建选项ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new_opt_Click(sender, e);
+        }
+
+        private void toolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            DeleteNode();
         }
     }
 }
