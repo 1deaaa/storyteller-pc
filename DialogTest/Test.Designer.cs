@@ -83,7 +83,6 @@
             this.cap.TabIndex = 3;
             this.cap.Text = "导航栏提示";
             this.cap.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.cap.Click += new System.EventHandler(this.label2_Click);
             // 
             // MainUI
             // 

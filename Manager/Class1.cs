@@ -104,22 +104,29 @@ namespace DialogSystem
     }
     public class Map
     {
-        public delegate void ActionHandler();
-        public static Dictionary<string, ActionHandler> ActMap = new Dictionary<string, Map.ActionHandler>
+        public static Dictionary<string, Action> ActMap = new Dictionary<string, Action>
         {
-          #region 行为映射表
-                //绑定所有指令和函数
-                    {"do",Method.Animate
-    }
-    #endregion 行为映射表
+            #region 行为映射表
+            // 绑定所有指令和函数
+            { "do", Method.Animate }
+            #endregion 行为映射表
         };
-        public static Dictionary<int, string> ChrMap= new Dictionary<int, string>()
+        public static Dictionary<string, Action<string>> ActArgMap = new Dictionary<string, Action<string>>
         {
-                    #region 角色映射表
-                    {0,"引导" },
-                    {1,"说明" },
-                    {2,"注释"}
-                    #endregion 角色映射表
+            #region 行为映射表
+            // 绑定所有指令和函数
+            { "bgm", Method.Music }
+            #endregion 行为映射表
+        };
+
+
+        public static Dictionary<int, string> ChrMap = new Dictionary<int, string>
+        {
+            #region 角色映射表
+            { 0, "引导" },
+            { 1, "说明" },
+            { 2, "注释" }
+            #endregion 角色映射表
         };
     }
     public static class Method

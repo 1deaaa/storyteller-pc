@@ -5,6 +5,8 @@ using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
+using static System.Net.Mime.MediaTypeNames;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 namespace DialogSystem
 {
     public partial class MainUI : Form
@@ -25,16 +27,6 @@ namespace DialogSystem
         {
             Dialog.SceneInit(Manager.JsonSource[0]["scene"].ToString());
             Dialog.DisplayOne(Dialog.CurrentObj, this);
-        }
-
-        private void tabPage2_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label2_Click(object sender, EventArgs e)
-        {
-
         }
     }
     class DialogGroup
@@ -133,19 +125,12 @@ namespace DialogSystem
                     case "act":
                         foreach (JProperty acts in key.Value)
                         {
-                            switch (acts.Name)
-                            {
-                                case "bgm":
-                                    Method.Music(acts.Value.ToString());
-                                    break;
-                                case "fun":
-                                    if (Map.ActMap.ContainsKey(acts.Value.ToString()))
-                                        Map.ActMap[acts.Value.ToString()]();//对应委托
-                                    break;
-                                case "brc":
-                                    Method.RecordBranch(acts.Value.ToString());
-                                    break;
-                            }
+                            string fun= acts.Name.ToString();
+                            string[] args = acts.Value.ToString().Split(new[] { ' ' },  StringSplitOptions.RemoveEmptyEntries);
+                            if(args.Count()==0)
+                                Map.ActMap[fun]();
+                            else
+                                Map.ActArgMap[fun]();
                         }
                         break;
                     case "opt":

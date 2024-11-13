@@ -58,15 +58,15 @@ namespace DialogSystem
             this.id = new System.Windows.Forms.Label();
             this.sceneMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.删除节点ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.dlgMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.delMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.创建对话ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.创建场景ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dlgMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.创建对话ToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.创建选项ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.创建行为ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.delMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pgrs_slc)).BeginInit();
             this.sceneMenu.SuspendLayout();
@@ -150,7 +150,7 @@ namespace DialogSystem
             this.next_edit.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.next_edit.Font = new System.Drawing.Font("微软雅黑 Light", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.next_edit.Location = new System.Drawing.Point(8, 803);
-            this.next_edit.Margin = new System.Windows.Forms.Padding(12, 12, 12, 12);
+            this.next_edit.Margin = new System.Windows.Forms.Padding(12);
             this.next_edit.Name = "next_edit";
             this.next_edit.Size = new System.Drawing.Size(264, 27);
             this.next_edit.TabIndex = 23;
@@ -172,7 +172,7 @@ namespace DialogSystem
             this.scene_name.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.scene_name.Font = new System.Drawing.Font("微软雅黑 Light", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.scene_name.Location = new System.Drawing.Point(8, 726);
-            this.scene_name.Margin = new System.Windows.Forms.Padding(12, 12, 12, 12);
+            this.scene_name.Margin = new System.Windows.Forms.Padding(12);
             this.scene_name.Name = "scene_name";
             this.scene_name.Size = new System.Drawing.Size(264, 27);
             this.scene_name.TabIndex = 21;
@@ -261,7 +261,7 @@ namespace DialogSystem
             this.cap_edit.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.cap_edit.Font = new System.Drawing.Font("微软雅黑 Light", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.cap_edit.Location = new System.Drawing.Point(9, 646);
-            this.cap_edit.Margin = new System.Windows.Forms.Padding(12, 12, 12, 12);
+            this.cap_edit.Margin = new System.Windows.Forms.Padding(12);
             this.cap_edit.Name = "cap_edit";
             this.cap_edit.Size = new System.Drawing.Size(264, 27);
             this.cap_edit.TabIndex = 14;
@@ -293,7 +293,7 @@ namespace DialogSystem
             this.opt_edit.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.opt_edit.Font = new System.Drawing.Font("微软雅黑 Light", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.opt_edit.Location = new System.Drawing.Point(9, 565);
-            this.opt_edit.Margin = new System.Windows.Forms.Padding(12, 12, 12, 12);
+            this.opt_edit.Margin = new System.Windows.Forms.Padding(12);
             this.opt_edit.Name = "opt_edit";
             this.opt_edit.Size = new System.Drawing.Size(264, 27);
             this.opt_edit.TabIndex = 9;
@@ -356,7 +356,7 @@ namespace DialogSystem
             this.chr_edit.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.chr_edit.ForeColor = System.Drawing.Color.Salmon;
             this.chr_edit.Location = new System.Drawing.Point(8, 70);
-            this.chr_edit.Margin = new System.Windows.Forms.Padding(12, 12, 12, 12);
+            this.chr_edit.Margin = new System.Windows.Forms.Padding(12);
             this.chr_edit.Name = "chr_edit";
             this.chr_edit.Size = new System.Drawing.Size(267, 32);
             this.chr_edit.TabIndex = 5;
@@ -369,12 +369,12 @@ namespace DialogSystem
             this.txt_edit.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.txt_edit.Font = new System.Drawing.Font("微软雅黑", 10.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.txt_edit.ForeColor = System.Drawing.Color.BlueViolet;
-            this.txt_edit.Location = new System.Drawing.Point(9, 127);
+            this.txt_edit.Location = new System.Drawing.Point(9, 137);
             this.txt_edit.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txt_edit.Multiline = true;
             this.txt_edit.Name = "txt_edit";
             this.txt_edit.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txt_edit.Size = new System.Drawing.Size(278, 376);
+            this.txt_edit.Size = new System.Drawing.Size(273, 366);
             this.txt_edit.TabIndex = 4;
             this.txt_edit.TextChanged += new System.EventHandler(this.txt_edit_TextChanged);
             this.txt_edit.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txt_edit_KeyDown);
@@ -408,6 +408,20 @@ namespace DialogSystem
             this.删除节点ToolStripMenuItem.Text = "删除节点";
             this.删除节点ToolStripMenuItem.Click += new System.EventHandler(this.删除节点ToolStripMenuItem_Click);
             // 
+            // 创建对话ToolStripMenuItem
+            // 
+            this.创建对话ToolStripMenuItem.Name = "创建对话ToolStripMenuItem";
+            this.创建对话ToolStripMenuItem.Size = new System.Drawing.Size(152, 30);
+            this.创建对话ToolStripMenuItem.Text = "创建对话";
+            this.创建对话ToolStripMenuItem.Click += new System.EventHandler(this.创建对话ToolStripMenuItem_Click);
+            // 
+            // 创建场景ToolStripMenuItem
+            // 
+            this.创建场景ToolStripMenuItem.Name = "创建场景ToolStripMenuItem";
+            this.创建场景ToolStripMenuItem.Size = new System.Drawing.Size(152, 30);
+            this.创建场景ToolStripMenuItem.Text = "创建场景";
+            this.创建场景ToolStripMenuItem.Click += new System.EventHandler(this.创建场景ToolStripMenuItem_Click);
+            // 
             // dlgMenu
             // 
             this.dlgMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
@@ -425,35 +439,6 @@ namespace DialogSystem
             this.toolStripMenuItem1.Size = new System.Drawing.Size(152, 30);
             this.toolStripMenuItem1.Text = "删除节点";
             this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
-            // 
-            // delMenu
-            // 
-            this.delMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
-            this.delMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripMenuItem2});
-            this.delMenu.Name = "contextMenuStrip1";
-            this.delMenu.Size = new System.Drawing.Size(241, 67);
-            // 
-            // toolStripMenuItem2
-            // 
-            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(240, 30);
-            this.toolStripMenuItem2.Text = "删除节点";
-            this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
-            // 
-            // 创建对话ToolStripMenuItem
-            // 
-            this.创建对话ToolStripMenuItem.Name = "创建对话ToolStripMenuItem";
-            this.创建对话ToolStripMenuItem.Size = new System.Drawing.Size(152, 30);
-            this.创建对话ToolStripMenuItem.Text = "创建对话";
-            this.创建对话ToolStripMenuItem.Click += new System.EventHandler(this.创建对话ToolStripMenuItem_Click);
-            // 
-            // 创建场景ToolStripMenuItem
-            // 
-            this.创建场景ToolStripMenuItem.Name = "创建场景ToolStripMenuItem";
-            this.创建场景ToolStripMenuItem.Size = new System.Drawing.Size(152, 30);
-            this.创建场景ToolStripMenuItem.Text = "创建场景";
-            this.创建场景ToolStripMenuItem.Click += new System.EventHandler(this.创建场景ToolStripMenuItem_Click);
             // 
             // 创建对话ToolStripMenuItem1
             // 
@@ -474,6 +459,21 @@ namespace DialogSystem
             this.创建行为ToolStripMenuItem.Name = "创建行为ToolStripMenuItem";
             this.创建行为ToolStripMenuItem.Size = new System.Drawing.Size(152, 30);
             this.创建行为ToolStripMenuItem.Text = "创建行为";
+            // 
+            // delMenu
+            // 
+            this.delMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.delMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItem2});
+            this.delMenu.Name = "contextMenuStrip1";
+            this.delMenu.Size = new System.Drawing.Size(153, 34);
+            // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(152, 30);
+            this.toolStripMenuItem2.Text = "删除节点";
+            this.toolStripMenuItem2.Click += new System.EventHandler(this.toolStripMenuItem2_Click);
             // 
             // Editor
             // 

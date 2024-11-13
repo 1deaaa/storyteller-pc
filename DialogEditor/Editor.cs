@@ -444,25 +444,35 @@ namespace DialogSystem
                 JObject actObject = dlg_obj["act"] as JObject;
                 if (actObject != null)
                 {
-                    if (actObject.ContainsKey("bgm"))
+                    foreach(var prop in actObject.Properties())
                     {
-                        string bgm = actObject["bgm"].ToString();
-                        RichNode bgmNode = new RichNode("🎵" + bgm);
-                        bgmNode.id = id;
-                        bgmNode.scene = CurrentScene;
-                        bgmNode.NodeType = NodeType.ActItem;
-                        (dlgNode ?? parentNode).Nodes.Add(bgmNode);
+                        RichNode richNode = new RichNode("⚡"+prop.Name);
+                        richNode.id = CurrentId;
+                        richNode.NodeType = NodeType.ActItem;
+                        richNode.scene = CurrentScene;
+                        richNode.act = prop.Value.ToString();
+                        (dlgNode ?? parentNode).Nodes.Add(richNode);
                     }
 
-                    if (actObject.ContainsKey("fun"))
-                    {
-                        string fun = actObject["fun"].ToString();
-                        RichNode funNode = new RichNode("⚡" + fun);
-                        funNode.id = id;
-                        funNode.scene = CurrentScene;
-                        funNode.NodeType = NodeType.ActItem;
-                        (dlgNode ?? parentNode).Nodes.Add(funNode);
-                    }
+                    //if (actObject.ContainsKey("bgm"))
+                    //{
+                    //    string bgm = actObject["bgm"].ToString();
+                    //    RichNode bgmNode = new RichNode("🎵" + bgm);
+                    //    bgmNode.id = id;
+                    //    bgmNode.scene = CurrentScene;
+                    //    bgmNode.NodeType = NodeType.ActItem;
+                    //    (dlgNode ?? parentNode).Nodes.Add(bgmNode);
+                    //}
+
+                    //if (actObject.ContainsKey("fun"))
+                    //{
+                    //    string fun = actObject["fun"].ToString();
+                    //    RichNode funNode = new RichNode("⚡" + fun);
+                    //    funNode.id = id;
+                    //    funNode.scene = CurrentScene;
+                    //    funNode.NodeType = NodeType.ActItem;
+                    //    (dlgNode ?? parentNode).Nodes.Add(funNode);
+                    //}
                 }
             }
         }
