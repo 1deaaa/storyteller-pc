@@ -9,8 +9,7 @@
         "chr": 1,
         "txt": "您好，这是AAA工业园",
         "act": {
-          "bgm": "theme",
-          "trans": "12 30 66"
+          "bgm": "theme"
         }
       },
       {
