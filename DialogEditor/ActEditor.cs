@@ -40,11 +40,6 @@ namespace DialogEditor
             listBox1.Items.Remove(listBox1.SelectedItems[0]);
         }
 
-        private void ActEditor_Load(object sender, EventArgs e)
-        {
-
-        }
-
         private void button1_Click(object sender, EventArgs e)
         {
             if (textBox2.Text == "")
@@ -71,11 +66,6 @@ namespace DialogEditor
                 args = sb.ToString();
             }
             Close();
-        }
-
-        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
         }
     }
 }

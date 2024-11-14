@@ -688,36 +688,6 @@ namespace DialogSystem
 
             History.Push((JArray)JsonSource.DeepClone());
         }
-        private void SaveJson()
-        {
-            File.WriteAllText(Manager.DataFilePath, Manager.JsonSource.ToString());
-        }
-
-        #endregion
-
-        private void new_opt_Click(object sender, EventArgs e)
-        {
-            if (CurrentNode.txt != null)//只在dlg下创建选项
-            {
-                AddOption(CurrentScene, CurrentId, empty_default);
-                CurrentNode.NodeType = NodeType.DlgWithOpt;
-                RichNode richNode = new RichNode("🚩" + "新选项");
-                richNode.id = CurrentId;
-                richNode.scene = CurrentScene;
-                richNode.opt = "新选项";
-                richNode.NodeType = NodeType.OptItem;
-                RichNode _dlg = new RichNode(empty_default);
-                _dlg.NodeType = NodeType.Dialog;
-                _dlg.id = NewId;
-                _dlg.scene = CurrentScene;
-                _dlg.txt = empty_default;
-                _dlg.chr = crt_chr;
-                CurrentNode.Nodes.Add(richNode);
-                richNode.Nodes.Add(_dlg);
-                view.SelectedNode = _dlg;
-                _dlg.EnsureVisible();
-            }
-        }
         private void RefreshTree(JArray src)
         {
             int _id = CurrentNode.id;
@@ -769,7 +739,7 @@ namespace DialogSystem
             s.Add(new JProperty(fun, args));
             History.Push((JArray)JsonSource.DeepClone());
         }
-        private void EditAct(string scene, int id, string fun,string args)
+        private void EditAct(string scene, int id, string fun, string args)
         {
             var obj = FindDialogue(scene, id);
             if (!obj.ContainsKey("act"))
@@ -777,6 +747,94 @@ namespace DialogSystem
             JObject s = (JObject)obj["act"];
             s[fun] = args;
             History.Push((JArray)JsonSource.DeepClone());
+        }
+        void DeleteNode()
+        {
+            if (CurrentNode.txt != null)//对话节点
+            {
+                if (CurrentNode.NodeType == NodeType.DlgWithOpt)//有子节点则进行二次确认
+                {
+                    if (Method.Warn("这将删除所节点下所有内容 务必谨慎操作！！！"))
+                    {
+                        DeleteDialogue(CurrentScene, CurrentId);
+                        CurrentNode.Remove();
+                    }
+                }
+                else
+                {
+                    DeleteDialogue(CurrentScene, CurrentId);
+                    CurrentNode.Remove();
+                }
+            }
+            else if (CurrentNode.NodeType == NodeType.OptItem)//选项节点
+            {
+                if (Method.Warn("这将删除选项下所有对话 务必谨慎操作！！！"))
+                {
+                    DeleteOption(CurrentScene, CurrentId, CurrentNode.opt);
+                    if (CurrentNode.Parent.Nodes.Count == 1)//全部移除 还原父节点
+                    {
+                        RichNode rn = (RichNode)CurrentNode.Parent;
+                        rn.NodeType = NodeType.Dialog;
+                    }
+                    CurrentNode.Remove();
+                }
+            }
+            else if (CurrentNode.NodeType == NodeType.Scene)//场景节点
+            {
+                if (Method.Warn("这将删除场景下所有对话 务必谨慎操作！！！"))
+                {
+                    JsonSource.Remove(GetSceneObj(CurrentScene));
+
+                    History.Push((JArray)JsonSource.DeepClone());
+                    CurrentNode.Remove();
+                }
+            }
+            else if (CurrentNode.NodeType == NodeType.ActItem)
+            {
+                JObject _j = (JObject)FindDialogue(CurrentScene, CurrentId)["act"];
+                _j.Remove(CurrentNode.act_fun);
+
+                History.Push((JArray)JsonSource.DeepClone());
+                CurrentNode.Remove();
+            }
+            else if (CurrentNode.next != null)
+            {
+                JObject _j = (JObject)FindDialogue(CurrentScene, CurrentId)["next"];
+                _j.Remove();
+
+                History.Push((JArray)JsonSource.DeepClone());
+                CurrentNode.Remove();
+            }
+        }
+        private void SaveJson()
+        {
+            File.WriteAllText(Manager.DataFilePath, Manager.JsonSource.ToString());
+        }
+
+        #endregion
+
+        private void new_opt_Click(object sender, EventArgs e)
+        {
+            if (CurrentNode.txt != null)//只在dlg下创建选项
+            {
+                AddOption(CurrentScene, CurrentId, empty_default);
+                CurrentNode.NodeType = NodeType.DlgWithOpt;
+                RichNode richNode = new RichNode("🚩" + "新选项");
+                richNode.id = CurrentId;
+                richNode.scene = CurrentScene;
+                richNode.opt = "新选项";
+                richNode.NodeType = NodeType.OptItem;
+                RichNode _dlg = new RichNode(empty_default);
+                _dlg.NodeType = NodeType.Dialog;
+                _dlg.id = NewId;
+                _dlg.scene = CurrentScene;
+                _dlg.txt = empty_default;
+                _dlg.chr = crt_chr;
+                CurrentNode.Nodes.Add(richNode);
+                richNode.Nodes.Add(_dlg);
+                view.SelectedNode = _dlg;
+                _dlg.EnsureVisible();
+            }
         }
 
         private void act_Click(object sender, EventArgs e)
@@ -892,14 +950,8 @@ namespace DialogSystem
             History.Push((JArray)JsonSource.DeepClone());
         }
 
-        private void opt_edit_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
         private void button1_Click_1(object sender, EventArgs e)
         {
-
             Method.Inf(JsonSource.ToString());
         }
 
@@ -954,69 +1006,6 @@ namespace DialogSystem
             scene["cap"] = cap_edit.Text;
         }
 
-        private void chr_edit_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-        void DeleteNode()
-        {
-            if (CurrentNode.txt != null)//对话节点
-            {
-                if (CurrentNode.NodeType == NodeType.DlgWithOpt)//有子节点则进行二次确认
-                {
-                    if (Method.Warn("这将删除所节点下所有内容 务必谨慎操作！！！"))
-                    {
-                        DeleteDialogue(CurrentScene, CurrentId);
-                        CurrentNode.Remove();
-                    }
-                }
-                else
-                {
-                    DeleteDialogue(CurrentScene, CurrentId);
-                    CurrentNode.Remove();
-                }
-            }
-            else if (CurrentNode.NodeType == NodeType.OptItem)//选项节点
-            {
-                if (Method.Warn("这将删除选项下所有对话 务必谨慎操作！！！"))
-                {
-                    DeleteOption(CurrentScene, CurrentId, CurrentNode.opt);
-                    if (CurrentNode.Parent.Nodes.Count == 1)//全部移除 还原父节点
-                    {
-                        RichNode rn = (RichNode)CurrentNode.Parent;
-                        rn.NodeType = NodeType.Dialog;
-                    }
-                    CurrentNode.Remove();
-                }
-            }
-            else if (CurrentNode.NodeType == NodeType.Scene)//场景节点
-            {
-                if (Method.Warn("这将删除场景下所有对话 务必谨慎操作！！！"))
-                {
-                    JsonSource.Remove(GetSceneObj(CurrentScene));
-
-                    History.Push((JArray)JsonSource.DeepClone());
-                    CurrentNode.Remove();
-                }
-            }
-            else if (CurrentNode.NodeType == NodeType.ActItem)
-            {
-                JObject _j = (JObject)FindDialogue(CurrentScene, CurrentId)["act"];
-                _j.Remove(CurrentNode.act_fun);
-
-                History.Push((JArray)JsonSource.DeepClone());
-                CurrentNode.Remove();
-            }
-            else if (CurrentNode.next != null)
-            {
-                JObject _j = (JObject)FindDialogue(CurrentScene, CurrentId)["next"];
-                _j.Remove();
-
-                History.Push((JArray)JsonSource.DeepClone());
-                CurrentNode.Remove();
-            }
-        }
-
         private void 删除节点ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DeleteNode();
@@ -1054,11 +1043,6 @@ namespace DialogSystem
                 RefreshTree(Manager.History.Peek());
                 e.Handled = true; // 防止事件继续传播
             }
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-
         }
 
         private void button2_Click_1(object sender, EventArgs e)
@@ -1099,12 +1083,6 @@ namespace DialogSystem
             view.SelectedNode = richNode;
             richNode.EnsureVisible();
         }
-
-        private void chr_Click(object sender, EventArgs e)
-        {
-
-        }
-
 
         private void new_next_Click(object sender, EventArgs e)
         {

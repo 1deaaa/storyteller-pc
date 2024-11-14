@@ -199,7 +199,7 @@ namespace DialogSystem
             this.new_scene.Name = "new_scene";
             this.new_scene.Size = new System.Drawing.Size(267, 58);
             this.new_scene.TabIndex = 19;
-            this.new_scene.Text = "创建新设备";
+            this.new_scene.Text = "创建新场景";
             this.new_scene.UseVisualStyleBackColor = false;
             this.new_scene.Click += new System.EventHandler(this.new_scene_Click);
             // 
@@ -253,7 +253,7 @@ namespace DialogSystem
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(282, 29);
             this.label3.TabIndex = 15;
-            this.label3.Text = "讲述进度";
+            this.label3.Text = "全局进度";
             this.label3.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // cap_edit
@@ -275,7 +275,7 @@ namespace DialogSystem
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(282, 29);
             this.label2.TabIndex = 13;
-            this.label2.Text = "导航栏提示";
+            this.label2.Text = "任务栏提示";
             this.label2.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // label1
@@ -311,7 +311,7 @@ namespace DialogSystem
             this.new_act.Name = "new_act";
             this.new_act.Size = new System.Drawing.Size(267, 65);
             this.new_act.TabIndex = 11;
-            this.new_act.Text = "创建函数映射";
+            this.new_act.Text = "编辑函数映射";
             this.new_act.UseVisualStyleBackColor = false;
             this.new_act.Click += new System.EventHandler(this.act_Click);
             // 
@@ -346,7 +346,7 @@ namespace DialogSystem
             this.chr.Name = "chr";
             this.chr.Size = new System.Drawing.Size(282, 29);
             this.chr.TabIndex = 7;
-            this.chr.Text = "设备代号";
+            this.chr.Text = "角色代号";
             this.chr.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.chr.Click += new System.EventHandler(this.chr_Click);
             // 
