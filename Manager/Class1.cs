@@ -58,9 +58,10 @@ namespace DialogSystem
         //dlg节点的属性
         public string opt = null;
         //opt名字节点的属性
-        public string act = null;
+        public string act_fun = null;
         public string scene_cap=null;
         public string scene_pgrs = null;
+        public string _act_args = null;
         public NodeType _NodeType=NodeType.None;
         public NodeType NodeType
         {
@@ -111,7 +112,7 @@ namespace DialogSystem
             { "do", Method.Animate }
             #endregion 行为映射表
         };
-        public static Dictionary<string, Action<string>> ActArgMap = new Dictionary<string, Action<string>>
+        public static Dictionary<string, Action<string[]>> ActArgMap = new Dictionary<string, Action<string[]>>
         {
             #region 行为映射表
             // 绑定所有指令和函数
@@ -156,7 +157,7 @@ namespace DialogSystem
                 return true;
             return false;
         }
-        public static void Music(string bgm)
+        public static void Music(string[] bgm)
         {
             
         }

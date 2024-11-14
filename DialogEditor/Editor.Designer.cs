@@ -490,6 +490,7 @@ namespace DialogSystem
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "Editor";
             this.Text = "哈基Miku";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Editor_FormClosed);
             this.Load += new System.EventHandler(this.Form1_Load_1);
             this.SizeChanged += new System.EventHandler(this.Form1_SizeChanged);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Editor_KeyDown);

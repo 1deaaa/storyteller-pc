@@ -6,7 +6,6 @@ using System.Linq;
 using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
 using static System.Net.Mime.MediaTypeNames;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 namespace DialogSystem
 {
     public partial class MainUI : Form
@@ -130,7 +129,7 @@ namespace DialogSystem
                             if(args.Count()==0)
                                 Map.ActMap[fun]();
                             else
-                                Map.ActArgMap[fun]();
+                                Map.ActArgMap[fun](args);
                         }
                         break;
                     case "opt":
