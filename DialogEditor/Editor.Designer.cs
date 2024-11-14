@@ -298,7 +298,6 @@ namespace DialogSystem
             this.opt_edit.Size = new System.Drawing.Size(264, 27);
             this.opt_edit.TabIndex = 9;
             this.opt_edit.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.opt_edit.TextChanged += new System.EventHandler(this.opt_edit_TextChanged);
             this.opt_edit.KeyDown += new System.Windows.Forms.KeyEventHandler(this.opt_edit_KeyDown);
             // 
             // new_act
@@ -348,7 +347,6 @@ namespace DialogSystem
             this.chr.TabIndex = 7;
             this.chr.Text = "角色代号";
             this.chr.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            this.chr.Click += new System.EventHandler(this.chr_Click);
             // 
             // chr_edit
             // 
@@ -361,7 +359,6 @@ namespace DialogSystem
             this.chr_edit.Size = new System.Drawing.Size(267, 32);
             this.chr_edit.TabIndex = 5;
             this.chr_edit.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.chr_edit.TextChanged += new System.EventHandler(this.chr_edit_TextChanged);
             this.chr_edit.KeyDown += new System.Windows.Forms.KeyEventHandler(this.chr_edit_KeyDown);
             // 
             // txt_edit
