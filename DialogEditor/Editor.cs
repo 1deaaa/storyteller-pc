@@ -1073,13 +1073,23 @@ namespace DialogSystem
                 ["pgrs"] = 0,
                 ["dia"] = new JArray()
             };
-            JsonSource.Insert(JsonSource.IndexOf(GetSceneObj(CurrentScene)), scene);
             RichNode richNode = new RichNode("新场景");
             richNode.scene = "新场景";
             richNode.scene_cap = "新任务指引";
             richNode.scene_pgrs = "0";
             richNode.NodeType = NodeType.Scene;
-            view.Nodes.Insert(view.Nodes.IndexOf(CurrentNode) + 1, richNode);
+            richNode.id = -1;
+            CurrentId = 10001;
+            if (CurrentNode == null)//没有场景
+            {
+                JsonSource.Add(scene);
+                view.Nodes.Add(richNode);
+            }
+            else
+            {
+                JsonSource.Insert(JsonSource.IndexOf(GetSceneObj(CurrentScene)), scene);
+                view.Nodes.Insert(view.Nodes.IndexOf(CurrentNode) + 1, richNode);
+            }
             view.SelectedNode = richNode;
             richNode.EnsureVisible();
         }
@@ -1153,6 +1163,73 @@ namespace DialogSystem
         private void Editor_FormClosed(object sender, FormClosedEventArgs e)
         {
             SaveJson();
+        }
+
+        private void 新建ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var result = MessageBox.Show("是否在新建前保存当前对话？", "提示", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+            if (result == DialogResult.Yes)
+            {
+                保存ToolStripMenuItem_Click(sender, e);
+            }
+            else if (result == DialogResult.Cancel)
+            {
+                return; // 用户取消操作，直接返回
+            }
+            // 清空当前对话树
+            CurrentNode = null;
+            _last_slc = null;
+            CurrentScene = null;
+            NewId = -1;
+            CurrentId = -1;
+            crt_chr = -1;
+            _option_id = -1;
+            _is_loading = false;
+            prev_obj_index = 0;
+            // 清空TreeView
+            view.Nodes.Clear();
+            // 清空对话数据
+            JsonSource = new JArray();
+            History.Clear();
+        }
+
+        private void 打开ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "JSON数据 (*.json)|*.json|All files (*.*)|*.*";
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    DataFilePath = openFileDialog.FileName;
+                    JsonSource = JArray.Parse(File.ReadAllText(DataFilePath));
+                    LoadDialogueToTreeView(view, JsonSource);
+                }
+            }
+        }
+
+        private void 保存ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(DataFilePath))
+            {
+                另存为ToolStripMenuItem_Click(sender, e);
+            }
+            else
+            {
+                SaveJson();
+            }
+        }
+
+        private void 另存为ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (SaveFileDialog saveFileDialog = new SaveFileDialog())
+            {
+                saveFileDialog.Filter = "JSON数据 (*.json)|*.json|All files (*.*)|*.*";
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    DataFilePath = saveFileDialog.FileName;
+                    SaveJson();
+                }
+            }
         }
     }
 }
