@@ -14,7 +14,7 @@ namespace DialogSystem
 {
     public class Manager
     {
-        public static string DataFilePath = @"..\..\..\对话.json";
+        public static string DataFilePath = @"C:\APP\对话.json";
         public static JArray JsonSource = JArray.Parse(File.ReadAllText(DataFilePath));
         public static Stack<JArray> History=new Stack<JArray>();
         public static JObject GetSceneObj(string scene)
@@ -108,8 +108,8 @@ namespace DialogSystem
         public static Dictionary<string, Action> ActMap = new Dictionary<string, Action>
         {
             #region 行为映射表
-            // 绑定所有指令和函数
-            { "do", Method.Animate }
+            // 绑定全局指令和函数 其余的可以动态添加
+            { "exit", Method.Exit }
             #endregion 行为映射表
         };
         public static Dictionary<string, Action<string[]>> ActArgMap = new Dictionary<string, Action<string[]>>
@@ -159,11 +159,12 @@ namespace DialogSystem
         }
         public static void Music(string[] bgm)
         {
-            
+            Method.Inf("正在播放" + bgm[0]);
         }
-        public static void Animate()
+
+        public static void Exit()
         {
-            Inf("执行了命令");
+            Application.Exit();
         }
         public static void RecordBranch(string brc)
         {

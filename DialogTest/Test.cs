@@ -14,7 +14,19 @@ namespace DialogSystem
         public MainUI()
         {
             InitializeComponent();
+            Map.ActArgMap.Add("trans",Trans);
         }
+        public static void Trans(string[] xy)
+        {
+            Method.Inf("正在播放" + xy[0] + "，" + xy[1]);
+        }
+
+
+
+
+
+
+
         private void txt_Click(object sender, EventArgs e)
         {
             if (!Dialog.DialogEnabled)
@@ -124,12 +136,19 @@ namespace DialogSystem
                     case "act":
                         foreach (JProperty acts in key.Value)
                         {
-                            string fun= acts.Name.ToString();
-                            string[] args = acts.Value.ToString().Split(new[] { ' ' },  StringSplitOptions.RemoveEmptyEntries);
-                            if(args.Count()==0)
-                                Map.ActMap[fun]();
-                            else
-                                Map.ActArgMap[fun](args);
+                            try
+                            {
+                                string fun = acts.Name.ToString();
+                                string[] args = acts.Value.ToString().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                                if (args.Count() == 0)
+                                    Map.ActMap[fun]();
+                                else
+                                    Map.ActArgMap[fun](args);
+                            }
+                            catch
+                            {
+                                Method.Error($"[{acts.Name}]未绑定到函数");
+                            }
                         }
                         break;
                     case "opt":

@@ -50,8 +50,18 @@ namespace DialogEditor
 
         private void button3_Click(object sender, EventArgs e)
         {
-            if (listBox1.Items.Count == 0)
+            if (textBox1.Text.Replace(" ", "") == "")
+            {
+                fun = null;
+                args = null;
+                Close();
+                return;
+            }
+            if (listBox1.Items.Count == 0)//空参函数
+            {
+                fun = textBox1.Text;
                 args = " ";
+            }
             else
             {
                 fun = textBox1.Text;
