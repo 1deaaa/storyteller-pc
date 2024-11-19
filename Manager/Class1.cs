@@ -15,7 +15,7 @@ namespace DialogSystem
     public class Manager
     {
         public static string DataFilePath = @"C:\APP\对话.json";
-        public static JArray JsonSource = JArray.Parse(File.ReadAllText(DataFilePath));
+        public static JArray JsonSource;
         public static Stack<JArray> History=new Stack<JArray>();
         public static JObject GetSceneObj(string scene)
         {
@@ -153,9 +153,13 @@ namespace DialogSystem
         }
         public static bool Warn(object e)
         {
-            if(MessageBox.Show(e.ToString(), "⚠️", MessageBoxButtons.YesNo, MessageBoxIcon.Warning)==DialogResult.Yes)
+            if (MessageBox.Show(e.ToString(), "⚠️", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                 return true;
             return false;
+        }
+        public static DialogResult Ask(object e)
+        {
+            return MessageBox.Show(e.ToString(), "⚠️", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
         }
         public static void Music(string[] bgm)
         {

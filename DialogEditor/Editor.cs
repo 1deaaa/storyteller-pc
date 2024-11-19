@@ -31,13 +31,19 @@ namespace DialogSystem
         int _option_id;//记录选项所属父级id
         bool _is_loading = true;//用于防止使用text_changed事件时在初始化阶段触发加入历史记录
         string empty_default = "未填写文本";//json解析时会忽略空字符串
-        int prev_obj_index = 0;//在编辑对话数组成员时 记录上一个对象的索引
         #region 搜索和UI相关
         public Editor()
         {
             InitializeComponent();
             CheckForIllegalCrossThreadCalls = false;//禁用多线程报错
-            LoadDialogueToTreeView(view, Manager.JsonSource);
+            string path = null;
+            if (File.Exists("cfg"))
+                path = File.ReadAllText("cfg");
+            if (!string.IsNullOrEmpty(path))
+            {
+                JsonSource = JArray.Parse(File.ReadAllText(path));
+                LoadDialogueToTreeView(view, Manager.JsonSource);
+            }
         }
 
         private RichNode FindNodeByText(TreeNodeCollection nodes, string searchText)
@@ -89,7 +95,8 @@ namespace DialogSystem
         private void Form1_Load_1(object sender, EventArgs e)
         {
             this.KeyPreview = true;
-            History.Push((JArray)JsonSource.DeepClone());
+            if (JsonSource != null)
+                History.Push((JArray)JsonSource.DeepClone());
             if (_is_loading)
                 _is_loading = false;
         }
@@ -140,204 +147,13 @@ namespace DialogSystem
 
         private void Form1_SizeChanged(object sender, EventArgs e)
         {
-            view.Size = new Size(Width / 5 * 3, Height - 40);
-            search.Location = new Point(Width - search.Width, 0);
-            search_list.Location = new Point(search.Left, search.Height + 4);
-            search_list.Size = new Size(search.Width, Height - 40 - 4);
+            view.Size = new Size(Width - panel1.Width - panel2.Width - 6, Height - 40);
+            search.Height = panel2.Height - search.Height - search.Top;
             panel1.Left = view.Width;
+            panel2.Left = panel1.Width + view.Width;
+            panel1.Height = view.Height;
+            panel1.Height = panel2.Height;
         }
-        #endregion
-        #region 弃用
-        //public static void EditSingleKey(JObject obj, string scene, string dialogID, string keyType, JToken newValue, bool _is_root = true)
-        //{
-        //    if (obj.TryGetValue(dialogID, out JToken token))
-        //    {
-        //        if (newValue.ToString() == "" && keyType == "txt")//处理删除操作
-        //        {
-        //            if (Method.Warn("这将删除所有子节点 请务必谨慎操作！！！"))
-        //            {
-        //                obj.Remove(dialogID);
-        //                return;
-        //            }
-        //        }
-        //        obj[dialogID][keyType] = newValue;
-        //        return;
-        //    }
-        //    if (_is_root)
-        //    {
-        //        _is_root = false;//最外层就有选项
-        //        foreach (var prop in ((JObject)obj[scene]).Properties())//第一层也就是主线对话 需要直接处理
-        //        {
-        //            if (prop.Name == dialogID)
-        //            {
-        //                JObject _j = (JObject)prop.Value;
-        //                _j[keyType] = newValue;
-        //                prop.Value = _j;
-        //                return;
-        //            }
-        //            if (prop.Value.Type == JTokenType.Object)
-        //            {
-        //                EditSingleKey((JObject)prop.Value, scene, dialogID, keyType, newValue, _is_root);
-        //            }
-        //        }
-        //    }
-        //    else
-        //    {
-        //        foreach (var prop in obj.Properties())//已经进入内层
-        //        {
-        //            if (prop.Value.Type == JTokenType.Object)
-        //            {
-        //                EditSingleKey((JObject)prop.Value, scene, dialogID, keyType, newValue, _is_root);
-        //            }
-        //        }
-        //    }
-        //}
-
-
-        //public static void EditOptObject(JObject obj, string scene, string dialogID, string keyType, string keyName, JToken newKeyName, bool _is_root = true)
-        //{
-        //    if (obj.TryGetValue(dialogID, out JToken token))
-        //    {
-        //        if (newKeyName.ToString() == "" && keyType == "txt")//处理删除操作
-        //        {
-        //            if (Method.Warn("这将删除所有子节点 请务必谨慎操作！！！"))
-        //            {
-        //                obj.Remove(dialogID);
-        //                return;
-        //            }
-        //        }
-        //        obj[dialogID][keyType] = newKeyName;
-        //        return;
-        //    }
-        //    if (_is_root)//最外层就有选项
-        //    {
-        //        _is_root = false;//标记下次进入内层遍历
-        //        foreach (var prop in ((JObject)obj[scene]).Properties())//第一层也就是主线对话 需要直接处理
-        //        {
-        //            if (prop.Name == dialogID)//选项改名
-        //            {
-        //                JObject _j = (JObject)prop.Value[keyType];
-        //                JObject _t = (JObject)_j[keyName];
-        //                _j.Remove(keyName);
-        //                _j.Add(newKeyName.ToString(), _t);
-        //                prop.Value[keyType] = _j;
-        //                return;
-        //            }
-        //            if (prop.Value.Type == JTokenType.Object)
-        //            {
-        //                EditOptObject((JObject)prop.Value, scene, dialogID, keyType, keyName, newKeyName, _is_root);
-        //            }
-        //        }
-        //    }
-        //    else
-        //    {
-        //        foreach (var prop in obj.Properties())//已经进入场景层
-        //        {
-        //            if (prop.Value.Type == JTokenType.Object)
-        //            {
-        //                EditOptObject((JObject)prop.Value, scene, dialogID, keyType, keyName, newKeyName, _is_root);
-        //            }
-        //        }
-        //    }
-        //}
-        //private void AddSceneToTreeView(TreeView treeView, JObject jsonObject)
-        //{
-        //    foreach (var scene in jsonObject.Properties())
-        //    {
-        //        RichNode sceneNode = new RichNode();
-        //        sceneNode.NodeType = NodeType.Scene;
-        //        sceneNode.Text = scene.Name;
-        //        CurrentScene = scene.Name;
-        //        sceneNode.scene_cap=scene.Value["cap"]?.ToString();
-        //        cap_edit.Text = sceneNode.scene_cap;
-        //        sceneNode.scene_pgrs= scene.Value["pgrs"]?.ToString();
-        //        pgrs_slc.Value = Convert.ToInt32(sceneNode.scene_pgrs);
-        //        treeView.Nodes.Add(sceneNode);
-        //        AddNodeToParent(sceneNode, (JArray)scene["dia"]);
-        //    }
-        //}
-
-        //private void AddNodeToParent(RichNode parentNode, JArray dlg_arry)
-        //{
-        //    foreach (JObject obj in dlg_arry)
-        //    {
-        //        RichNode node = new RichNode();
-        //        node.Text = "⏬";//默认文本 当连续选项出现时 没有txt节点设置文本
-        //        node.scene = CurrentScene;
-        //        if (obj is JObject)//处理分支节点
-        //        {
-        //            //对话ID节点
-        //            int _id;
-        //            if (int.TryParse(obj["id"].ToString(), out _id) && _id > 100)//所以选项名字严禁纯数字！！！
-        //            {
-        //                CurrentId = _id;
-        //                node.id = CurrentId;
-        //                //处理txt时会给节点设置Text
-
-        //            }
-        //            //
-        //            else
-        //            {
-        //                node.id=CurrentId;
-        //                switch (obj.Value)
-        //                {
-        //                    case "opt":
-        //                        //node.opt = (JObject)key.Value;
-        //                        node.Text = "✨选项";
-        //                        node.NodeType=NodeType.OptionRoot;
-        //                        node.ForeColor = ThemeColor.Option;
-        //                        break;
-        //                    case "act":
-        //                        //node.act = (JObject)key.Value;
-        //                        node.Text = "⚡行为";
-        //                        node.NodeType=NodeType.ActionRoot;
-        //                        node.ForeColor = ThemeColor.Action;
-        //                        break;
-        //                    case "brc":
-        //                        node.Text = "🌿分支";
-        //                        break;
-        //                    default:
-        //                        node.Text = obj.Name;//只有可能是选项名字了
-        //                        node.opt = obj.Name;
-        //                        node.NodeType=NodeType.Option;
-        //                        node.BackColor = ThemeColor.Option;
-        //                        break;
-        //                }
-        //            }
-        //               parentNode.Nodes.Add(node);
-        //               AddNodeToParent(node, (JObject)obj.Value);
-        //        }
-        //        else//处理单节点 也就是给父节点贴上属性或者子节点
-        //        { 
-        //            node.id = CurrentId;
-        //            switch(obj.Name)
-        //            {
-        //                case "chr":
-        //                    parentNode.chr=obj.Value.ToString();
-        //                    break;
-        //                case "txt":
-        //                    parentNode.txt=obj.Value.ToString();
-        //                    parentNode.Text=Map.ChrMap[int.Parse(parentNode.chr)]+"："+obj.Value.ToString();
-        //                    break;
-        //                case "bgm":
-        //                    node.Text= "🎵" + obj.Value.ToString();
-        //                    node.BackColor = ThemeColor.Action;
-        //                    parentNode.Nodes.Add(node);
-        //                    break;
-        //                case "rcd"://记录当前选项
-        //                    node.Text= "🖊️"+ obj.Value.ToString();
-        //                    node.BackColor = ThemeColor.Action;
-        //                    parentNode.Nodes.Add(node);
-        //                    break ;
-        //                case "fun":
-        //                    node.Text = "⚡" + obj.Value.ToString();
-        //                    node.BackColor = ThemeColor.Action;
-        //                    parentNode.Nodes.Add(node);
-        //                    break;               
-        //            }
-        //        }
-        //    }
-        //}
         #endregion
         private void view_AfterSelect(object sender, TreeViewEventArgs e)
         {
@@ -361,6 +177,7 @@ namespace DialogSystem
         #region 加载树状图
         public void LoadDialogueToTreeView(TreeView treeView, JArray src)
         {
+            treeView.Nodes.Clear();
             foreach (var scene_obj in src)
             {
                 RichNode sceneNode = new RichNode(scene_obj["scene"].ToString());
@@ -452,29 +269,9 @@ namespace DialogSystem
                         richNode.NodeType = NodeType.ActItem;
                         richNode.scene = CurrentScene;
                         richNode.act_fun = prop.Name;
-                        richNode._act_args= prop.Value.ToString();
+                        richNode._act_args = prop.Value.ToString();
                         (dlgNode ?? parentNode).Nodes.Add(richNode);
                     }
-
-                    //if (actObject.ContainsKey("bgm"))
-                    //{
-                    //    string bgm = actObject["bgm"].ToString();
-                    //    RichNode bgmNode = new RichNode("🎵" + bgm);
-                    //    bgmNode.id = id;
-                    //    bgmNode.scene = CurrentScene;
-                    //    bgmNode.NodeType = NodeType.ActItem;
-                    //    (dlgNode ?? parentNode).Nodes.Add(bgmNode);
-                    //}
-
-                    //if (actObject.ContainsKey("fun"))
-                    //{
-                    //    string fun = actObject["fun"].ToString();
-                    //    RichNode funNode = new RichNode("⚡" + fun);
-                    //    funNode.id = id;
-                    //    funNode.scene = CurrentScene;
-                    //    funNode.NodeType = NodeType.ActItem;
-                    //    (dlgNode ?? parentNode).Nodes.Add(funNode);
-                    //}
                 }
             }
         }
@@ -617,7 +414,7 @@ namespace DialogSystem
 
         private void AddDialogue(string scene, int prevId, string newText, int newCharacter)
         {
-            if (prevId == 0)//id为0 场景节点
+            if (prevId < 1)//场景节点
             {
                 JArray _j = (JArray)GetSceneObj(scene)["dia"];
                 _j.Add(new JObject
@@ -626,7 +423,6 @@ namespace DialogSystem
                     ["chr"] = newCharacter,
                     ["txt"] = newText
                 });
-
                 History.Push((JArray)JsonSource.DeepClone());
                 return;
             }
@@ -642,11 +438,9 @@ namespace DialogSystem
                         ["chr"] = newCharacter,
                         ["txt"] = newText
                     };
-                    prev_obj_index = dialogues.IndexOf(prevDialogue);
-                    dialogues.Insert(prev_obj_index + 1, newDialogue);
+                    dialogues.Insert(dialogues.IndexOf(prevDialogue) + 1, newDialogue);
                 }
             }
-
             History.Push((JArray)JsonSource.DeepClone());
         }
 
@@ -808,7 +602,8 @@ namespace DialogSystem
         }
         private void SaveJson()
         {
-            File.WriteAllText(Manager.DataFilePath, Manager.JsonSource.ToString());
+            if (JsonSource != null)
+                File.WriteAllText(Manager.DataFilePath, Manager.JsonSource.ToString());
         }
 
         #endregion
@@ -853,18 +648,18 @@ namespace DialogSystem
                 rn.id = CurrentId;
                 rn.scene = CurrentScene;
                 rn.act_fun = ActEditor.fun;
-                rn._act_args=ActEditor.args;
+                rn._act_args = ActEditor.args;
                 CurrentNode.Nodes.Add(rn);
             }
-            else if(CurrentNode.NodeType==NodeType.ActItem)
+            else if (CurrentNode.NodeType == NodeType.ActItem)
             {
-                new ActEditor(true,CurrentNode._act_args).ShowDialog();
+                new ActEditor(true, CurrentNode._act_args).ShowDialog();
                 if (ActEditor.args == null)
                 {
                     Method.Error("用户取消编辑");
                     return;
                 }
-                EditAct(CurrentScene,CurrentId,CurrentNode.act_fun,ActEditor.args);
+                EditAct(CurrentScene, CurrentId, CurrentNode.act_fun, ActEditor.args);
                 CurrentNode._act_args = ActEditor.args;
             }
 
@@ -960,15 +755,16 @@ namespace DialogSystem
             if (CurrentNode.NodeType == NodeType.ActItem && CurrentNode.NodeType == NodeType.Next)
                 return;
             RichNode rn = new RichNode(empty_default);
-            rn.id = NewId;
             rn.chr = crt_chr;
             rn.txt = empty_default;
             rn.scene = CurrentScene;
+            rn.NodeType = NodeType.Dialog;
             switch (CurrentNode.NodeType)
             {
                 case NodeType.Dialog:
                     AddDialogue(CurrentScene, CurrentId, empty_default, 0);
-                    CurrentNode.Parent.Nodes.Insert(prev_obj_index + 1, rn);
+                    rn.id = NewId;//Add dlg会改变newid 所以必须在其后设置
+                    CurrentNode.Parent.Nodes.Insert(CurrentNode.Index + 1, rn);
                     break;
                 case NodeType.OptItem:
                 case NodeType.Scene:
@@ -977,11 +773,13 @@ namespace DialogSystem
                     {
                         richNode = (RichNode)CurrentNode.Nodes[CurrentNode.Nodes.Count - 1];
                         AddDialogue(CurrentScene, richNode.id, empty_default, 0);
+                        rn.id = NewId;
                         CurrentNode.Nodes.Add(rn);
                     }
                     else
                     {
                         AddDialogue(CurrentScene, 0, empty_default, 0);
+                        rn.id = NewId;
                         CurrentNode.Nodes.Add(rn);
                     }
                     break;
@@ -1064,8 +862,6 @@ namespace DialogSystem
 
         private void new_scene_Click(object sender, EventArgs e)
         {
-            if (CurrentNode.NodeType != NodeType.Scene)
-                return;
             var scene = new JObject
             {
                 ["scene"] = "新场景",
@@ -1079,12 +875,14 @@ namespace DialogSystem
             richNode.scene_pgrs = "0";
             richNode.NodeType = NodeType.Scene;
             richNode.id = -1;
-            CurrentId = 10001;
-            if (CurrentNode == null)//没有场景
+            if (CurrentNode==null)
             {
+                NewId = 10000;
                 JsonSource.Add(scene);
                 view.Nodes.Add(richNode);
             }
+           else if (CurrentNode.NodeType != NodeType.Scene)
+                return;
             else
             {
                 JsonSource.Insert(JsonSource.IndexOf(GetSceneObj(CurrentScene)), scene);
@@ -1160,10 +958,6 @@ namespace DialogSystem
             DeleteNode();
         }
 
-        private void Editor_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            SaveJson();
-        }
 
         private void 新建ToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1176,23 +970,26 @@ namespace DialogSystem
             {
                 return; // 用户取消操作，直接返回
             }
+            ReLoad();
+        }
+        private void ReLoad()
+        {
+            DataFilePath = null;
             // 清空当前对话树
             CurrentNode = null;
             _last_slc = null;
             CurrentScene = null;
-            NewId = -1;
+            NewId = 10000;
             CurrentId = -1;
-            crt_chr = -1;
+            crt_chr = 0;
             _option_id = -1;
             _is_loading = false;
-            prev_obj_index = 0;
             // 清空TreeView
             view.Nodes.Clear();
             // 清空对话数据
             JsonSource = new JArray();
             History.Clear();
         }
-
         private void 打开ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -1230,6 +1027,51 @@ namespace DialogSystem
                     SaveJson();
                 }
             }
+        }
+
+        private void 创建行为ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            act_Click(sender, e);
+        }
+
+        private void button2_MouseDown(object sender, MouseEventArgs e)
+        {
+            contextMenuStrip1.Show(button2, e.Location);
+        }
+
+        private void Editor_FormClosing_1(object sender, FormClosingEventArgs e)
+        {
+            if (!File.Exists(DataFilePath))//空文件
+            {
+                switch (Method.Ask("新文档尚未保存 是否保存"))
+                {
+                    case DialogResult.Yes:
+                        另存为ToolStripMenuItem_Click(sender, e);
+                        break;
+                    case DialogResult.No:
+                        break;
+                    case DialogResult.Cancel:
+                        e.Cancel = true; // 取消关闭操作
+                        return;
+                }
+                return;
+            }
+
+            if (!JToken.DeepEquals(JsonSource, JArray.Parse(File.ReadAllText(DataFilePath))))//未保存
+            {
+                switch (Method.Ask("数据已更改 是否保存"))
+                {
+                    case DialogResult.Yes:
+                        保存ToolStripMenuItem_Click(sender, e);
+                        break;
+                    case DialogResult.No:
+                        break;
+                    case DialogResult.Cancel:
+                        e.Cancel = true; // 取消关闭操作
+                        return;
+                }
+            }
+            File.WriteAllText("cfg", DataFilePath);
         }
     }
 }
