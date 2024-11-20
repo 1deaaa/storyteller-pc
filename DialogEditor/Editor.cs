@@ -548,7 +548,7 @@ namespace DialogSystem
             {
                 if (CurrentNode.NodeType == NodeType.DlgWithOpt)//有子节点则进行二次确认
                 {
-                    if (Method.Warn("这将删除所节点下所有内容 务必谨慎操作！！！"))
+                    if (Method.Warn("这将删除所对话节点下所有内容 务必谨慎操作！！！"))
                     {
                         DeleteDialogue(CurrentScene, CurrentId);
                         CurrentNode.Remove();
@@ -575,6 +575,11 @@ namespace DialogSystem
             }
             else if (CurrentNode.NodeType == NodeType.Scene)//场景节点
             {
+                if(view.Nodes.Count==1)
+                {
+                    Method.Inf("至少要有一个场景节点");
+                    return;
+                }
                 if (Method.Warn("这将删除场景下所有对话 务必谨慎操作！！！"))
                 {
                     JsonSource.Remove(GetSceneObj(CurrentScene));
@@ -989,6 +994,7 @@ namespace DialogSystem
             // 清空对话数据
             JsonSource = new JArray();
             History.Clear();
+            new_scene_Click(null, null);
         }
         private void 打开ToolStripMenuItem_Click(object sender, EventArgs e)
         {
