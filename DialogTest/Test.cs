@@ -7,17 +7,20 @@ using System.Windows.Forms;
 using System.Threading;
 using Newtonsoft.Json.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
+
 namespace DialogSystem
 {
     public partial class MainUI : Form
     {
-        //对话脚本结构中 之所以不用键名存储实际文本 是因为键名无法被修改
+        // 对话脚本结构中 之所以不用键名存储实际文本 是因为键名无法被修改
         public MainUI()
         {
             CheckForIllegalCrossThreadCalls = false;
             InitializeComponent();
-            Map.ActArgMap.Add("trans",Trans);
+            Map.ActArgMap.Add("trans", Trans);
         }
+
         public static void Trans(string[] xy)
         {
             Method.Inf("正在播放" + xy[0] + "，" + xy[1]);
@@ -27,7 +30,7 @@ namespace DialogSystem
         {
             if (!Dialog.DialogEnabled)
                 return;
-            if (Dialog.IsTypingTxt&&!Dialog.AllowSkip)
+            if (Dialog.IsTypingTxt && !Dialog.AllowSkip)
                 return;
             Dialog.DisplayOne(Dialog.CurrentObj, this);
         }
@@ -39,6 +42,7 @@ namespace DialogSystem
             Dialog.DisplayOne(Dialog.CurrentObj, this);
         }
     }
+
     class DialogGroup
     {
         public JArray Array;
@@ -46,93 +50,125 @@ namespace DialogSystem
         public DialogGroup(JArray _array)
         {
             Array = _array;
-            NextIndex = 0;//0才是有效的第一个
+            NextIndex = 0; // 0才是有效的第一个
         }
     }
+
     static class Dialog
     {
-        //对于vs调试显示的json数据 外层都被加了一组{} 实际上是不存在的
         public static JToken DialogScene;
         static Stack<DialogGroup> DialogArray = new();
-        public static JObject CurrentObj;//目前遍历到的对话对象
-        public static int Choice = 0;//注意 从1开始！！！
-        public static int CurrentGroupObjIndex = 0;//目前遍历到的组内对话对象
+        public static JObject CurrentObj; // 目前遍历到的对话对象
+        public static int Choice = 0; // 注意 从1开始!!!
+        public static int CurrentGroupObjIndex = 0; // 目前遍历到的组内对话对象
         public static int scene_index = 0;
 
         static bool waitForChoice = false;
-        public static bool EndDialog = false;//下一次点击直接关闭对话
-        static string NextDialog = null;//指定next所指向的下一个对话场景 为null表示不跳转
+        public static bool EndDialog = false; // 下一次点击直接关闭对话
+        static string NextDialog = null; // 指定next所指向的下一个对话场景 为null表示不跳转
         static List<ChoiceBtn> branch_btns = new();
         public static bool DialogEnabled = true;
 
         public static bool AllowSkip = true;
-        public static bool IsTypingTxt= false;
+        public static bool IsTypingTxt = false;
         public static int TypingSpeed = 40;
-        static Thread typing;
+        static CancellationTokenSource cancellationTokenSource; // 用于取消当前的打印任务
         static string crtTxt;
+
+        // 缓存选项路径
+        private static Dictionary<int, List<JObject>> optionCache = new();
+
         public static JArray CrtArray
         {
             get { return DialogArray.Peek().Array; }
             set { DialogArray.Peek().Array = value; }
         }
+
         public static int CrtIndex
         {
             get { return DialogArray.Peek().NextIndex; }
             set { DialogArray.Peek().NextIndex = value; }
         }
+
         public static void SceneInit(string _scene)
         {
-            //??=如果为null才赋值 防止重复赋值
-            DialogScene = Manager.GetSceneObj(_scene);//根（场景）键值对的值为数组  Token代表任意数据节点 Prop代表键值对 Object代表{xxx}
+            // ??= 如果为null才赋值 防止重复赋值
+            DialogScene = Manager.GetSceneObj(_scene); // 根（场景）键值对的值为数组  Token代表任意数据节点 Prop代表键值对 Object代表{xxx}
             CurrentGroupObjIndex = 0;
             NextDialog = null;
             waitForChoice = false;
             Program.UI.cap.Text = DialogScene["cap"].ToString();
             DialogArray.Clear();
             DialogArray.Push(new DialogGroup((JArray)DialogScene["dia"]));
+
+            // 预先解析所有选项路径
+            CacheOptions((JArray)DialogScene["dia"]);
+
             CurrentObj = (JObject)CrtArray[0];
         }
-        private static void ChoiceBtn_Click(object sender, EventArgs e)//选项点击 也相当于点击了一次继续
+
+        // 缓存选项路径
+        private static void CacheOptions(JArray diaArray)
+        {
+            foreach (JObject dialogObj in diaArray)
+            {
+                if (dialogObj.ContainsKey("opt"))
+                {
+                    var options = (JArray)dialogObj["opt"];
+                    List<JObject> optionList = new List<JObject>();
+                    foreach (JObject option in options)
+                    {
+                        optionList.Add(option);
+                    }
+                    // 将选项缓存到字典中
+                    optionCache[dialogObj.GetHashCode()] = optionList;
+                }
+            }
+        }
+
+        private static void ChoiceBtn_Click(object sender, EventArgs e) // 选项点击 也相当于点击了一次继续
         {
             ChoiceBtn clicked_btn = (ChoiceBtn)sender;
             Choice = clicked_btn.Choice;
-            //
-            Program.UI.Text = "选择了选项" + Choice.ToString();
-            //
-            JObject selectedOption = (JObject)CurrentObj["opt"][Choice - 1];
+
+            // 从缓存中获取选项对话
+            JObject selectedOption = optionCache[CurrentObj.GetHashCode()][Choice - 1];
             JArray diaArray = (JArray)selectedOption["dia"];
-            DialogArray.Push(new DialogGroup(diaArray));//根据选项定位新的对话组
-            CurrentObj = (JObject)CrtArray[0];//进入选项内部对话
+            DialogArray.Push(new DialogGroup(diaArray)); // 根据选项定位新的对话组
+            CurrentObj = (JObject)CrtArray[0]; // 进入选项内部对话
             foreach (var i in branch_btns)
-                i.Dispose();//关闭选项
+                i.Dispose(); // 关闭选项
             branch_btns.Clear();
             DisplayOne(CurrentObj, Program.UI);
         }
 
-        public static void TypingTxt(string txt, Label label)
+        public static async Task TypingTxtAsync(string txt, Label label)
         {
             label.Text = "";
             crtTxt = "";
             IsTypingTxt = true;
+
+            // 如果存在正在进行的打印任务，取消它
+            cancellationTokenSource?.Cancel();
+            cancellationTokenSource = new CancellationTokenSource();
+            var token = cancellationTokenSource.Token;
+
             for (int i = 0; i < txt.Length; i++)
             {
-                crtTxt = "";
-                crtTxt= txt.Substring(0, i+1);
+                if (token.IsCancellationRequested) // 如果任务被取消则退出
+                {
+                    break;
+                }
+
+                crtTxt = txt.Substring(0, i + 1);
                 label.Text = crtTxt;
-                try
-                {
-                    Thread.Sleep(TypingSpeed);
-                }
-                catch
-                {
-                    return;
-                }
+                await Task.Delay(TypingSpeed); // 异步延时，不会阻塞UI线程
             }
+
             IsTypingTxt = false;
         }
 
-
-        public static void DisplayOne(JObject crt_obj, MainUI ui)//传入一个对话对象
+        public static void DisplayOne(JObject crt_obj, MainUI ui) // 传入一个对话对象
         {
             #region 处理跳转和初始化
             if (EndDialog)
@@ -150,7 +186,8 @@ namespace DialogSystem
             waitForChoice = false;
             DialogEnabled = true;
             #endregion
-            foreach (JProperty key in crt_obj.Properties())//解析一个dia下所有参数
+
+            foreach (JProperty key in crt_obj.Properties()) // 解析一个dia下所有参数
             {
                 switch (key.Name)
                 {
@@ -158,10 +195,11 @@ namespace DialogSystem
                         ui.spk.Text = Map.ChrMap[(int)key.Value];
                         break;
                     case "txt":
-                        if (typing != null)
-                            typing.Interrupt();
-                        typing= new Thread(() => TypingTxt(key.Value.ToString(), ui.txt));
-                        typing.Start();
+                        if (cancellationTokenSource != null && cancellationTokenSource.Token.CanBeCanceled)
+                            cancellationTokenSource.Cancel(); // 取消之前的打印任务
+
+                        cancellationTokenSource = new CancellationTokenSource(); // 创建新的取消令牌
+                        TypingTxtAsync(key.Value.ToString(), ui.txt);
                         break;
                     case "act":
                         foreach (JProperty acts in key.Value)
@@ -187,10 +225,11 @@ namespace DialogSystem
                         int i = 1;
                         foreach (JObject option in key.Value)
                         {
-                            ChoiceBtn btn = new();
+                            ChoiceBtn btn = GetButtonFromPool();
                             branch_btns.Add(btn);
                             btn.Text = option["optn"].ToString();
                             btn.Choice = i;
+
                             #region 界面相关
                             btn.Size = new Size(200, 50);
                             btn.Location = new Point(ui.Width - 200, btn.Size.Height * i);
@@ -206,7 +245,7 @@ namespace DialogSystem
                 }
             }
 
-            //解析任务结束 已经显示在屏幕上 开始定位下一次解析位置 所有current皆为下次待解析对象
+            // 解析任务结束 已经显示在屏幕上 开始定位下一次解析位置 所有current皆为下次待解析对象
             if (CrtIndex < CrtArray.Count)
                 CrtIndex++;
             if (waitForChoice)
@@ -216,24 +255,24 @@ namespace DialogSystem
                 SceneInit(NextDialog);
             }
 
-            if (CrtArray.Count - CrtIndex == 0)//本层已全部解析完毕 退出本层
+            if (CrtArray.Count - CrtIndex == 0) // 本层已全部解析完毕 退出本层
             {
                 while (CrtArray.Count - CrtIndex == 0)
                 {
                     DialogArray.Pop();
-                    if (DialogArray.Count == 0)//场景所有对话结束
+                    if (DialogArray.Count == 0) // 场景所有对话结束
                     {
-                        if(scene_index>=Manager.JsonSource.Count-1)
-                        { 
+                        if (scene_index >= Manager.JsonSource.Count - 1)
+                        {
                             EndDialog = true;
                             return;
                         }
                         SceneInit(Manager.JsonSource[++scene_index]["scene"].ToString());
-                        //下次点击 在事件开头直接退出
+                        // 下次点击 在事件开头直接退出
                         return;
                     }
                 }
-                CurrentObj = (JObject)CrtArray[CrtIndex];//切换到外层
+                CurrentObj = (JObject)CrtArray[CrtIndex]; // 切换到外层
             }
             else if (CrtArray.Count - CrtIndex > 0)
             {
@@ -241,11 +280,25 @@ namespace DialogSystem
             }
         }
 
+        private static List<ChoiceBtn> buttonPool = new List<ChoiceBtn>();
+
+        // 获取复用的按钮
+        private static ChoiceBtn GetButtonFromPool()
+        {
+            if (buttonPool.Count > 0)
+            {
+                var btn = buttonPool.Last();
+                buttonPool.RemoveAt(buttonPool.Count - 1);
+                return btn;
+            }
+            return new ChoiceBtn();
+        }
         public static void End(MainUI ui)
         {
             ui.txt.Dispose();
             ui.spk.Dispose();
         }
+
         class ChoiceBtn : Button
         {
             public int Choice = 0;
