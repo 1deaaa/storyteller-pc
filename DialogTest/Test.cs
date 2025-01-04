@@ -4,8 +4,9 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
+using System.Threading;
 using Newtonsoft.Json.Linq;
-using static System.Net.Mime.MediaTypeNames;
+using System.Linq.Expressions;
 namespace DialogSystem
 {
     public partial class MainUI : Form
@@ -13,6 +14,7 @@ namespace DialogSystem
         //对话脚本结构中 之所以不用键名存储实际文本 是因为键名无法被修改
         public MainUI()
         {
+            CheckForIllegalCrossThreadCalls = false;
             InitializeComponent();
             Map.ActArgMap.Add("trans",Trans);
         }
@@ -21,21 +23,18 @@ namespace DialogSystem
             Method.Inf("正在播放" + xy[0] + "，" + xy[1]);
         }
 
-
-
-
-
-
-
         private void txt_Click(object sender, EventArgs e)
         {
             if (!Dialog.DialogEnabled)
+                return;
+            if (Dialog.IsTypingTxt&&!Dialog.AllowSkip)
                 return;
             Dialog.DisplayOne(Dialog.CurrentObj, this);
         }
 
         private void MainUI_Load(object sender, EventArgs e)
         {
+            Manager.JsonSource = JArray.Parse(System.IO.File.ReadAllText(Manager.DataFilePath));
             Dialog.SceneInit(Manager.JsonSource[0]["scene"].ToString());
             Dialog.DisplayOne(Dialog.CurrentObj, this);
         }
@@ -53,17 +52,24 @@ namespace DialogSystem
     static class Dialog
     {
         //对于vs调试显示的json数据 外层都被加了一组{} 实际上是不存在的
+        public static JToken DialogScene;
+        static Stack<DialogGroup> DialogArray = new();
+        public static JObject CurrentObj;//目前遍历到的对话对象
         public static int Choice = 0;//注意 从1开始！！！
         public static int CurrentGroupObjIndex = 0;//目前遍历到的组内对话对象
         public static int scene_index = 0;
-        static Stack<DialogGroup> DialogArray=new();
-        public static JObject CurrentObj;//目前遍历到的对话对象
+
         static bool waitForChoice = false;
         public static bool EndDialog = false;//下一次点击直接关闭对话
         static string NextDialog = null;//指定next所指向的下一个对话场景 为null表示不跳转
         static List<ChoiceBtn> branch_btns = new();
         public static bool DialogEnabled = true;
-        public static JToken DialogScene;
+
+        public static bool AllowSkip = true;
+        public static bool IsTypingTxt= false;
+        public static int TypingSpeed = 40;
+        static Thread typing;
+        static string crtTxt;
         public static JArray CrtArray
         {
             get { return DialogArray.Peek().Array; }
@@ -103,6 +109,28 @@ namespace DialogSystem
             DisplayOne(CurrentObj, Program.UI);
         }
 
+        public static void TypingTxt(string txt, Label label)
+        {
+            label.Text = "";
+            crtTxt = "";
+            IsTypingTxt = true;
+            for (int i = 0; i < txt.Length; i++)
+            {
+                crtTxt = "";
+                crtTxt= txt.Substring(0, i+1);
+                label.Text = crtTxt;
+                try
+                {
+                    Thread.Sleep(TypingSpeed);
+                }
+                catch
+                {
+                    return;
+                }
+            }
+            IsTypingTxt = false;
+        }
+
 
         public static void DisplayOne(JObject crt_obj, MainUI ui)//传入一个对话对象
         {
@@ -122,7 +150,6 @@ namespace DialogSystem
             waitForChoice = false;
             DialogEnabled = true;
             #endregion
-
             foreach (JProperty key in crt_obj.Properties())//解析一个dia下所有参数
             {
                 switch (key.Name)
@@ -131,7 +158,10 @@ namespace DialogSystem
                         ui.spk.Text = Map.ChrMap[(int)key.Value];
                         break;
                     case "txt":
-                        ui.txt.Text = key.Value.ToString();
+                        if (typing != null)
+                            typing.Interrupt();
+                        typing= new Thread(() => TypingTxt(key.Value.ToString(), ui.txt));
+                        typing.Start();
                         break;
                     case "act":
                         foreach (JProperty acts in key.Value)
