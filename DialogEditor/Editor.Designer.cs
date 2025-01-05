@@ -196,6 +196,7 @@ namespace DialogSystem
             // 
             // pgrs_slc
             // 
+            this.pgrs_slc.DecimalPlaces = 2;
             this.pgrs_slc.Location = new System.Drawing.Point(8, 893);
             this.pgrs_slc.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.pgrs_slc.Maximum = new decimal(new int[] {

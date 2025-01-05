@@ -167,7 +167,8 @@ namespace DialogSystem
             txt_edit.Text = CurrentNode.txt;
             opt_edit.Text = CurrentNode.opt;
             cap_edit.Text = CurrentNode.scene_cap;
-            pgrs_slc.Value = Convert.ToInt32(CurrentNode.scene_pgrs);
+            if(CurrentNode.NodeType==NodeType.Scene)
+                pgrs_slc.Value = Convert.ToDecimal(CurrentNode.scene_pgrs);
             next_edit.Text = CurrentNode.next;
             if (CurrentNode.scene_cap != null)
                 scene_name.Text = CurrentScene;
