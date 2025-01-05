@@ -14,7 +14,7 @@ namespace DialogSystem
 {
     public class Manager
     {
-        public static string DataFilePath = @"C:\APP\对话.json";
+        public static string DataFilePath = @"..\..\..\对话.json";
         public static JArray JsonSource;
         public static Stack<JArray> History=new Stack<JArray>();
         public static JObject GetSceneObj(string scene)
@@ -103,7 +103,7 @@ namespace DialogSystem
             Text = t;
         }
     }
-    public class Map
+    public class Map//映射表
     {
         public static Dictionary<string, Action> ActMap = new Dictionary<string, Action>
         {
