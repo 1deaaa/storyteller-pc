@@ -24,10 +24,10 @@ namespace DialogSystem
     {
         RichNode CurrentNode;//当前选中节点
         RichNode _last_slc;//上一个选中节点
-        public static string CurrentScene = "";
-        public static int NewId = -1;
-        public static int CurrentId = -1;
-        int crt_chr = 0;
+        public static string CurrentScene = "";//当前场景
+        public static int NewId = -1;//新节点id
+        public static int CurrentId = -1;//当前选中节点id
+        int crt_chr = 0;//当前默认角色
         int _option_id;//记录选项所属父级id
         bool _is_loading = true;//用于防止使用text_changed事件时在初始化阶段触发加入历史记录
         string empty_default = "未填写文本";//json解析时会忽略空字符串

@@ -18,7 +18,7 @@ namespace DialogSystem
         {
             CheckForIllegalCrossThreadCalls = false;
             InitializeComponent();
-            Map.ActArgMap.Add("trans", Trans);
+            Map.ActArgMap.Add("trans", Trans); //动态添加绑定示例
         }
 
         public static void Trans(string[] xy)
@@ -38,7 +38,7 @@ namespace DialogSystem
         private void MainUI_Load(object sender, EventArgs e)
         {
             Manager.JsonSource = JArray.Parse(System.IO.File.ReadAllText(Manager.DataFilePath));
-            Dialog.SceneInit(Manager.JsonSource[0]["scene"].ToString());
+            Dialog.SceneInit(Manager.JsonSource[0]["scene"].ToString());//获取第一个场景名
             Dialog.DisplayOne(Dialog.CurrentObj, this);
         }
     }
@@ -56,24 +56,24 @@ namespace DialogSystem
 
     static class Dialog
     {
-        public static JToken DialogScene;
+        public static JToken DialogScene;//当前场景
         static Stack<DialogGroup> DialogArray = new();
         public static JObject CurrentObj; // 目前遍历到的对话对象
         public static int Choice = 0; // 注意 从1开始!!!
         public static int CurrentGroupObjIndex = 0; // 目前遍历到的组内对话对象
-        public static int scene_index = 0;
+        public static int scene_index = 0;//当前场景下主线对话索引
 
-        static bool waitForChoice = false;
+        static bool waitForChoice = false;//是否处于等待选项状态
         public static bool EndDialog = false; // 下一次点击直接关闭对话
         static string NextDialog = null; // 指定next所指向的下一个对话场景 为null表示不跳转
-        static List<ChoiceBtn> branch_btns = new();
-        public static bool DialogEnabled = true;
+        static List<ChoiceBtn> branch_btns = new();//选项按钮
+        public static bool DialogEnabled = true;//是否启用对话
 
-        public static bool AllowSkip = true;
-        public static bool IsTypingTxt = false;
-        public static int TypingSpeed = 40;
-        static CancellationTokenSource cancellationTokenSource; // 用于取消当前的打印任务
-        static string crtTxt;
+        public static bool AllowSkip = true;//是否允许跳过对话
+        public static bool IsTypingTxt = false;//是否正在打字
+        public static int TypingSpeed = 40;//打字间隔毫秒
+        static CancellationTokenSource cancel; // 用于取消当前的打印任务
+        static string crtTxt;//缓存当前打印的文本
 
         // 缓存选项路径
         private static Dictionary<int, List<JObject>> optionCache = new();
@@ -142,16 +142,16 @@ namespace DialogSystem
             DisplayOne(CurrentObj, Program.UI);
         }
 
-        public static async Task TypingTxtAsync(string txt, Label label)
+        public static async Task TypingTxtAsync(string txt, Label label)//异步打字
         {
             label.Text = "";
             crtTxt = "";
             IsTypingTxt = true;
 
             // 如果存在正在进行的打印任务，取消它
-            cancellationTokenSource?.Cancel();
-            cancellationTokenSource = new CancellationTokenSource();
-            var token = cancellationTokenSource.Token;
+            cancel?.Cancel();
+            cancel = new CancellationTokenSource();//创建新的取消令牌
+            var token = cancel.Token;
 
             for (int i = 0; i < txt.Length; i++)
             {
@@ -195,10 +195,10 @@ namespace DialogSystem
                         ui.spk.Text = Map.ChrMap[(int)key.Value];
                         break;
                     case "txt":
-                        if (cancellationTokenSource != null && cancellationTokenSource.Token.CanBeCanceled)
-                            cancellationTokenSource.Cancel(); // 取消之前的打印任务
+                        if (cancel != null && cancel.Token.CanBeCanceled)
+                            cancel.Cancel(); // 取消之前的打印任务
 
-                        cancellationTokenSource = new CancellationTokenSource(); // 创建新的取消令牌
+                        cancel = new CancellationTokenSource(); // 创建新的取消令牌
                         TypingTxtAsync(key.Value.ToString(), ui.txt);
                         break;
                     case "act":
@@ -247,9 +247,9 @@ namespace DialogSystem
 
             // 解析任务结束 已经显示在屏幕上 开始定位下一次解析位置 所有current皆为下次待解析对象
             if (CrtIndex < CrtArray.Count)
-                CrtIndex++;
+                CrtIndex++;//最高的优先级 优先解析下一个对话
             if (waitForChoice)
-                return;
+                return;//若处于等待选项时 直接返回继续等待
             if (NextDialog != null)
             {
                 SceneInit(NextDialog);

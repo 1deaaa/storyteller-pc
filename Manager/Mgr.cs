@@ -14,6 +14,7 @@ namespace DialogSystem
 {
     public class Manager
     {
+        //脚本位置
         public static string DataFilePath = @"..\..\..\对话.json";
         public static JArray JsonSource;
         public static Stack<JArray> History=new Stack<JArray>();
@@ -130,7 +131,7 @@ namespace DialogSystem
             #endregion 角色映射表
         };
     }
-    public static class Method
+    public static class Method //一些杂项 无需迁移到Unity
     {
         public static string GetRandomString(int length)
         {
