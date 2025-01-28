@@ -147,12 +147,12 @@ namespace DialogSystem
 
         private void Form1_SizeChanged(object sender, EventArgs e)
         {
-            view.Size = new Size(Width - panel1.Width - panel2.Width - 6, Height - 40);
-            search.Height = panel2.Height - search.Height - search.Top;
-            panel1.Left = view.Width;
-            panel2.Left = panel1.Width + view.Width;
-            panel1.Height = view.Height;
-            panel1.Height = panel2.Height;
+            view.Size = new Size(Width - edit_panel.Width - search_panel.Width - 6, Height - 40);
+            search.Height = search_panel.Height - search.Height - search.Top;
+            edit_panel.Left = view.Width;
+            search_panel.Left = edit_panel.Width + view.Width;
+            edit_panel.Height = view.Height;
+            edit_panel.Height = search_panel.Height;
         }
         #endregion
         private void view_AfterSelect(object sender, TreeViewEventArgs e)
