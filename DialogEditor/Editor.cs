@@ -23,7 +23,7 @@ namespace DialogSystem
     public partial class Editor : Form
     {
         RichNode CurrentNode;//当前选中节点
-        RichNode _last_slc;//上一个选中节点
+        RichNode _last_slc=new RichNode("");//上一个选中节点
         public static string CurrentScene = "";//当前场景
         public static int NewId = -1;//新节点id
         public static int CurrentId = -1;//当前选中节点id
@@ -134,11 +134,27 @@ namespace DialogSystem
                     {
                         // 自动选中树状图中的节点
                         if (_last_slc != null)
-                            _last_slc.BackColor = Color.White;
-                        view.SelectedNode = CurrentNode;
-                        CurrentNode.BackColor = Color.Red;
-                        _last_slc = CurrentNode;
-                        CurrentNode.EnsureVisible();
+                        {
+                            switch (_last_slc.NodeType)
+                            {
+                                case NodeType.DlgWithOpt:
+                                    _last_slc.BackColor = ThemeColor.Option;
+                                    break;
+                                case NodeType.Scene:
+                                    _last_slc.BackColor = ThemeColor.Scene;
+                                    break;
+                                case NodeType.DlgWithAct:
+                                    _last_slc.BackColor = ThemeColor.Action;
+                                    break;
+                                default:
+                                    _last_slc.BackColor = ThemeColor.Dialog;
+                                    break;
+                            }
+                            view.SelectedNode = CurrentNode;
+                            CurrentNode.BackColor = Color.Red;
+                            _last_slc = CurrentNode;
+                            CurrentNode.EnsureVisible();
+                        }
                     }
                 });
                 td.Start();
@@ -1079,6 +1095,11 @@ namespace DialogSystem
                 }
             }
             File.WriteAllText("cfg", DataFilePath);
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

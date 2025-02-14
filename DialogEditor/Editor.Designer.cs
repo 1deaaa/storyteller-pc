@@ -74,6 +74,7 @@ namespace DialogSystem
             this.另存为ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.search_panel = new System.Windows.Forms.Panel();
             this.button2 = new System.Windows.Forms.Button();
+            this.label6 = new System.Windows.Forms.Label();
             this.edit_panel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pgrs_slc)).BeginInit();
             this.sceneMenu.SuspendLayout();
@@ -86,7 +87,7 @@ namespace DialogSystem
             // view
             // 
             this.view.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.view.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.view.Font = new System.Drawing.Font("微软雅黑", 10F);
             this.view.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.view.Location = new System.Drawing.Point(0, 0);
             this.view.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
@@ -100,15 +101,15 @@ namespace DialogSystem
             // 
             this.search_list.BackColor = System.Drawing.Color.LightSteelBlue;
             this.search_list.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.search_list.Font = new System.Drawing.Font("Microsoft YaHei UI Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.search_list.Font = new System.Drawing.Font("微软雅黑", 10F);
             this.search_list.ForeColor = System.Drawing.Color.Black;
             this.search_list.FormattingEnabled = true;
-            this.search_list.ItemHeight = 27;
+            this.search_list.ItemHeight = 23;
             this.search_list.Location = new System.Drawing.Point(3, 415);
             this.search_list.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.search_list.Name = "search_list";
             this.search_list.ScrollAlwaysVisible = true;
-            this.search_list.Size = new System.Drawing.Size(302, 351);
+            this.search_list.Size = new System.Drawing.Size(302, 368);
             this.search_list.TabIndex = 2;
             this.search_list.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged_1);
             // 
@@ -361,7 +362,7 @@ namespace DialogSystem
             this.new_dia.Name = "new_dia";
             this.new_dia.Size = new System.Drawing.Size(148, 48);
             this.new_dia.TabIndex = 17;
-            this.new_dia.Text = "创建新说明";
+            this.new_dia.Text = "创建新对话";
             this.new_dia.UseVisualStyleBackColor = false;
             this.new_dia.Click += new System.EventHandler(this.new_dia_Click);
             // 
@@ -521,6 +522,7 @@ namespace DialogSystem
             // search_panel
             // 
             this.search_panel.BackColor = System.Drawing.Color.LightCyan;
+            this.search_panel.Controls.Add(this.label6);
             this.search_panel.Controls.Add(this.button2);
             this.search_panel.Controls.Add(this.new_scene);
             this.search_panel.Controls.Add(this.new_dia);
@@ -529,10 +531,10 @@ namespace DialogSystem
             this.search_panel.Controls.Add(this.new_act);
             this.search_panel.Controls.Add(this.search_list);
             this.search_panel.Controls.Add(this.search);
-            this.search_panel.Location = new System.Drawing.Point(1347, 3);
+            this.search_panel.Location = new System.Drawing.Point(1347, -3);
             this.search_panel.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.search_panel.Name = "search_panel";
-            this.search_panel.Size = new System.Drawing.Size(308, 778);
+            this.search_panel.Size = new System.Drawing.Size(308, 781);
             this.search_panel.TabIndex = 20;
             // 
             // button2
@@ -549,12 +551,23 @@ namespace DialogSystem
             this.button2.UseVisualStyleBackColor = false;
             this.button2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.button2_MouseDown);
             // 
+            // label6
+            // 
+            this.label6.Font = new System.Drawing.Font("微软雅黑 Light", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label6.Location = new System.Drawing.Point(27, 283);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(251, 24);
+            this.label6.TabIndex = 24;
+            this.label6.Text = "搜索文本";
+            this.label6.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.label6.Click += new System.EventHandler(this.label6_Click);
+            // 
             // Editor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.GhostWhite;
-            this.ClientSize = new System.Drawing.Size(1657, 778);
+            this.ClientSize = new System.Drawing.Size(1657, 779);
             this.Controls.Add(this.search_panel);
             this.Controls.Add(this.edit_panel);
             this.Controls.Add(this.view);
@@ -623,5 +636,6 @@ namespace DialogSystem
         private ToolStripMenuItem 另存为ToolStripMenuItem;
         private Panel search_panel;
         private Button button2;
+        private Label label6;
     }
 }
