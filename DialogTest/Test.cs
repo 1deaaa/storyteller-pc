@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
 using System.Threading;
 using Newtonsoft.Json.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace DialogSystem
@@ -73,7 +71,6 @@ namespace DialogSystem
         public static bool IsTypingTxt = false;//是否正在打字
         public static int TypingSpeed = 40;//打字间隔毫秒
         static CancellationTokenSource cancel; // 用于取消当前的打印任务
-        static string crtTxt;//缓存当前打印的文本
 
         // 缓存选项路径
         private static Dictionary<int, List<JObject>> optionCache = new();
@@ -145,24 +142,35 @@ namespace DialogSystem
         public static async Task TypingTxtAsync(string txt, Label label)//异步打字
         {
             label.Text = "";
-            crtTxt = "";
             IsTypingTxt = true;
 
             // 如果存在正在进行的打印任务，取消它
             cancel?.Cancel();
-            cancel = new CancellationTokenSource();//创建新的取消令牌
-            var token = cancel.Token;
+            var currentCancelTokenSource = new CancellationTokenSource();//创建新的取消令牌
+            cancel = currentCancelTokenSource; // 将新的取消令牌源赋给静态字段
+            var token = currentCancelTokenSource.Token;
 
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            bool cancelled = false;
             for (int i = 0; i < txt.Length; i++)
             {
                 if (token.IsCancellationRequested) // 如果任务被取消则退出
                 {
+                    cancelled = true;
                     break;
                 }
 
-                crtTxt = txt.Substring(0, i + 1);
-                label.Text = crtTxt;
-                await Task.Delay(TypingSpeed); // 异步延时，不会阻塞UI线程
+                sb.Append(txt[i]);
+                label.Text = sb.ToString();
+                try
+                {
+                    await Task.Delay(TypingSpeed, token); // 异步延时，并传递取消令牌
+                }
+                catch (TaskCanceledException)
+                {
+                    cancelled = true;
+                    break;
+                }
             }
 
             IsTypingTxt = false;

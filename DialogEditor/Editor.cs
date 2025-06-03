@@ -1098,5 +1098,15 @@ namespace DialogSystem
         {
 
         }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void next_edit_TextChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }

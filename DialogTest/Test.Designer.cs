@@ -37,12 +37,12 @@
             // txt
             // 
             this.txt.BackColor = System.Drawing.Color.PaleTurquoise;
-            this.txt.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.txt.Cursor = System.Windows.Forms.Cursors.Default;
             this.txt.Font = new System.Drawing.Font("微软雅黑 Light", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.txt.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.txt.Location = new System.Drawing.Point(-3, 495);
+            this.txt.Location = new System.Drawing.Point(-3, 594);
             this.txt.Name = "txt";
-            this.txt.Size = new System.Drawing.Size(1085, 125);
+            this.txt.Size = new System.Drawing.Size(1256, 150);
             this.txt.TabIndex = 0;
             this.txt.Text = "对话框";
             this.txt.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -53,11 +53,11 @@
             this.spk.BackColor = System.Drawing.Color.PaleTurquoise;
             this.spk.Font = new System.Drawing.Font("微软雅黑 Light", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.spk.ForeColor = System.Drawing.Color.SeaGreen;
-            this.spk.Location = new System.Drawing.Point(459, 495);
+            this.spk.Location = new System.Drawing.Point(539, 594);
             this.spk.Name = "spk";
-            this.spk.Size = new System.Drawing.Size(155, 38);
+            this.spk.Size = new System.Drawing.Size(174, 46);
             this.spk.TabIndex = 1;
-            this.spk.Text = "讲解员视角";
+            this.spk.Text = "角色";
             this.spk.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label1
@@ -65,37 +65,39 @@
             this.label1.BackColor = System.Drawing.Color.Transparent;
             this.label1.Font = new System.Drawing.Font("微软雅黑 Light", 20F);
             this.label1.ForeColor = System.Drawing.Color.Black;
-            this.label1.Location = new System.Drawing.Point(11, 8);
+            this.label1.Location = new System.Drawing.Point(12, 10);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(240, 63);
+            this.label1.Size = new System.Drawing.Size(270, 76);
             this.label1.TabIndex = 2;
             this.label1.Text = "↑调试信息";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // cap
             // 
-            this.cap.BackColor = System.Drawing.Color.PaleTurquoise;
-            this.cap.Font = new System.Drawing.Font("微软雅黑 Light", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.cap.BackColor = System.Drawing.Color.Transparent;
+            this.cap.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.cap.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
-            this.cap.Location = new System.Drawing.Point(396, 457);
+            this.cap.Location = new System.Drawing.Point(-3, 300);
             this.cap.Name = "cap";
-            this.cap.Size = new System.Drawing.Size(279, 38);
+            this.cap.Size = new System.Drawing.Size(573, 46);
             this.cap.TabIndex = 3;
-            this.cap.Text = "导航栏提示";
-            this.cap.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.cap.Text = "任务提示";
+            this.cap.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // MainUI
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(1075, 619);
+            this.ClientSize = new System.Drawing.Size(1253, 743);
             this.Controls.Add(this.cap);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.spk);
             this.Controls.Add(this.txt);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Location = new System.Drawing.Point(2000, 2000);
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.MaximizeBox = false;
             this.Name = "MainUI";
             this.Text = "MainUI";
             this.TopMost = true;
