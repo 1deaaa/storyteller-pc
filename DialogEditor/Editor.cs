@@ -1012,12 +1012,11 @@ namespace DialogSystem
             JsonSource = new JArray();
             History.Clear();
             new_scene_Click(null, null);
-        }
-        private void 打开ToolStripMenuItem_Click(object sender, EventArgs e)
+        }        private void 打开ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                openFileDialog.Filter = "JSON数据 (*.json)|*.json|All files (*.*)|*.*";
+                openFileDialog.Filter = "故事数据 (*.story)|*.story";
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     DataFilePath = openFileDialog.FileName;
@@ -1037,13 +1036,11 @@ namespace DialogSystem
             {
                 SaveJson();
             }
-        }
-
-        private void 另存为ToolStripMenuItem_Click(object sender, EventArgs e)
+        }        private void 另存为ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (SaveFileDialog saveFileDialog = new SaveFileDialog())
             {
-                saveFileDialog.Filter = "JSON数据 (*.json)|*.json|All files (*.*)|*.*";
+                saveFileDialog.Filter = "故事数据 (*.story)|*.story";
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     DataFilePath = saveFileDialog.FileName;

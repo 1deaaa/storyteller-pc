@@ -11,11 +11,10 @@ using DialogSystem;
 using System.IO;
 
 namespace DialogSystem
-{
-    public class Manager
+{    public class Manager
     {
         //脚本位置
-        public static string DataFilePath = @"..\..\..\对话.json";
+        public static string DataFilePath = @"..\..\..\对话.story";
         public static JArray JsonSource;
         public static Stack<JArray> History=new Stack<JArray>();
         public static JObject GetSceneObj(string scene)
