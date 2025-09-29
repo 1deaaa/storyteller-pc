@@ -16,11 +16,16 @@ namespace DialogSystem
         {
             CheckForIllegalCrossThreadCalls = false;
             InitializeComponent();
-            Map.ActArgMap.Add("trans", Trans); //动态添加绑定示例
+            Map.ActArgMap["trans"] = Trans; // 使用索引器确保覆盖或添加
         }
 
         public static void Trans(string[] xy)
         {
+            if (xy == null || xy.Length < 2)
+            {
+                Method.Error("trans 参数不足");
+                return;
+            }
             Method.Inf("正在播放" + xy[0] + "，" + xy[1]);
         }
 
@@ -35,7 +40,17 @@ namespace DialogSystem
 
         private void MainUI_Load(object sender, EventArgs e)
         {
+            if (string.IsNullOrEmpty(Manager.DataFilePath) || !System.IO.File.Exists(Manager.DataFilePath))
+            {
+                Method.Error("故事文件不存在，请先在编辑器中保存或选择有效路径。");
+                return;
+            }
             Manager.JsonSource = JArray.Parse(System.IO.File.ReadAllText(Manager.DataFilePath));
+            if (Manager.JsonSource == null || Manager.JsonSource.Count == 0)
+            {
+                Method.Error("故事数据为空");
+                return;
+            }
             Dialog.ResetDialog(); // 重置对话状态
             Dialog.SceneInit(Manager.JsonSource[0]["scene"].ToString());//获取第一个场景名
             Dialog.DisplayOne(Dialog.CurrentObj, this);
@@ -56,7 +71,7 @@ namespace DialogSystem
     static class Dialog
     {
         public static JToken DialogScene;//当前场景
-        static Stack<DialogGroup> DialogArray = new();
+        static Stack<DialogGroup> DialogArray = new Stack<DialogGroup>();
         public static JObject CurrentObj; // 目前遍历到的对话对象
         public static int Choice = 0; // 注意 从1开始!!!
         public static int CurrentGroupObjIndex = 0; // 目前遍历到的组内对话对象
@@ -65,7 +80,7 @@ namespace DialogSystem
         static bool waitForChoice = false;//是否处于等待选项状态
         public static bool EndDialog = false; // 下一次点击直接关闭对话
         static string NextDialog = null; // 指定next所指向的下一个对话场景 为null表示不跳转
-        static List<ChoiceBtn> branch_btns = new();//选项按钮
+        static List<ChoiceBtn> branch_btns = new List<ChoiceBtn>();//选项按钮
         public static bool DialogEnabled = true;//是否启用对话
 
         public static bool AllowSkip = true;//是否允许跳过对话
@@ -118,6 +133,7 @@ namespace DialogSystem
             }
 
             CurrentObj = (JObject)CrtArray[0];
+            CrtIndex = 0; // 确保索引从0开始
         }
 
         private static void ChoiceBtn_Click(object sender, EventArgs e) // 选项点击 也相当于点击了一次继续
@@ -153,6 +169,7 @@ namespace DialogSystem
             if (DialogArray.Count > 0 && CrtArray != null && CrtArray.Count > 0)
             {
                 CurrentObj = (JObject)CrtArray[0]; // 进入选项内部对话
+                CrtIndex = 0;
             }
             else
             {
@@ -230,7 +247,10 @@ namespace DialogSystem
                 switch (key.Name)
                 {
                     case "chr":
-                        ui.spk.Text = Map.ChrMap[(int)key.Value];
+                        string name;
+                        int chrId = (int)key.Value;
+                        if (!Map.ChrMap.TryGetValue(chrId, out name)) name = chrId.ToString();
+                        ui.spk.Text = name;
                         break;
                     case "txt":
                         if (cancel != null && cancel.Token.CanBeCanceled)
@@ -246,10 +266,14 @@ namespace DialogSystem
                             {
                                 string fun = acts.Name.ToString();
                                 string[] args = acts.Value.ToString().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                                if (args.Count() == 0)
+                                if (args.Length == 0)
+                                    Map.ActMap[fun]();
+                                else if (Map.ActArgMap.ContainsKey(fun))
+                                    Map.ActArgMap[fun](args);
+                                else if (Map.ActMap.ContainsKey(fun))
                                     Map.ActMap[fun]();
                                 else
-                                    Map.ActArgMap[fun](args);
+                                    Method.Error($"[{acts.Name}]未绑定到函数");
                             }
                             catch
                             {

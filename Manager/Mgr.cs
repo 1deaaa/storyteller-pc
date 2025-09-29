@@ -19,9 +19,11 @@ namespace DialogSystem
         public static Stack<JArray> History=new Stack<JArray>();
         public static JObject GetSceneObj(string scene)
         {
+            if (JsonSource == null || string.IsNullOrEmpty(scene))
+                return null;
             foreach (var obj in JsonSource)
             {
-                if (obj["scene"].ToString() == scene)
+                if (obj["scene"] != null && obj["scene"].ToString() == scene)
                     return obj as JObject;
             }
             return null;

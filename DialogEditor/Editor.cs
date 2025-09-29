@@ -35,7 +35,7 @@ namespace DialogSystem
         public Editor()
         {
             InitializeComponent();
-            CheckForIllegalCrossThreadCalls = false;//禁用多线程报错
+            // 移除跨线程检查禁用
             string path = null;
             if (File.Exists("cfg"))
                 path = File.ReadAllText("cfg");
@@ -122,42 +122,47 @@ namespace DialogSystem
 
         private void listBox1_SelectedIndexChanged_1(object sender, EventArgs e)
         {
-            // 获取用户在ListBox中选中的项
             string selectedOption = search_list.SelectedItem?.ToString();
             if (!string.IsNullOrEmpty(selectedOption))
             {
-                Thread td = new Thread(() =>
+                // 使用 UI 线程安全方式
+                if (this.InvokeRequired)
                 {
-                    // 根据选中的项在树状图中查找对应的节点
-                    CurrentNode = FindNodeByText(view.Nodes, selectedOption);
-                    if (CurrentNode != null)
+                    this.BeginInvoke((Action)(() => SelectNodeByText(selectedOption)));
+                }
+                else
+                {
+                    SelectNodeByText(selectedOption);
+                }
+            }
+        }
+        private void SelectNodeByText(string selectedOption)
+        {
+            CurrentNode = FindNodeByText(view.Nodes, selectedOption);
+            if (CurrentNode != null)
+            {
+                if (_last_slc != null)
+                {
+                    switch (_last_slc.NodeType)
                     {
-                        // 自动选中树状图中的节点
-                        if (_last_slc != null)
-                        {
-                            switch (_last_slc.NodeType)
-                            {
-                                case NodeType.DlgWithOpt:
-                                    _last_slc.BackColor = ThemeColor.Option;
-                                    break;
-                                case NodeType.Scene:
-                                    _last_slc.BackColor = ThemeColor.Scene;
-                                    break;
-                                case NodeType.DlgWithAct:
-                                    _last_slc.BackColor = ThemeColor.Action;
-                                    break;
-                                default:
-                                    _last_slc.BackColor = ThemeColor.Dialog;
-                                    break;
-                            }
-                            view.SelectedNode = CurrentNode;
-                            CurrentNode.BackColor = Color.Red;
-                            _last_slc = CurrentNode;
-                            CurrentNode.EnsureVisible();
-                        }
+                        case NodeType.DlgWithOpt:
+                            _last_slc.BackColor = ThemeColor.Option;
+                            break;
+                        case NodeType.Scene:
+                            _last_slc.BackColor = ThemeColor.Scene;
+                            break;
+                        case NodeType.DlgWithAct:
+                            _last_slc.BackColor = ThemeColor.Action;
+                            break;
+                        default:
+                            _last_slc.BackColor = ThemeColor.Dialog;
+                            break;
                     }
-                });
-                td.Start();
+                }
+                view.SelectedNode = CurrentNode;
+                CurrentNode.BackColor = Color.Red;
+                _last_slc = CurrentNode;
+                CurrentNode.EnsureVisible();
             }
         }
 
@@ -184,7 +189,11 @@ namespace DialogSystem
             opt_edit.Text = CurrentNode.opt;
             cap_edit.Text = CurrentNode.scene_cap;
             if(CurrentNode.NodeType==NodeType.Scene)
-                pgrs_slc.Value = Convert.ToDecimal(CurrentNode.scene_pgrs);
+            {
+                decimal dv;
+                if (decimal.TryParse(CurrentNode.scene_pgrs, out dv))
+                    pgrs_slc.Value = dv;
+            }
             next_edit.Text = CurrentNode.next;
             if (CurrentNode.scene_cap != null)
                 scene_name.Text = CurrentScene;
@@ -227,8 +236,10 @@ namespace DialogSystem
             if (dlg_obj == null)
                 return;
             string txt = dlg_obj["txt"]?.ToString();
-            int chr = int.Parse(dlg_obj["chr"]?.ToString());
-            int id = int.Parse(dlg_obj["id"].ToString());
+            int chr = 0;
+            int.TryParse(dlg_obj["chr"]?.ToString(), out chr);
+            int id = -1;
+            int.TryParse(dlg_obj["id"]?.ToString(), out id);
             if (id > NewId)
             {
                 NewId = id;
@@ -246,7 +257,9 @@ namespace DialogSystem
                 dlgNode.txt = txt;
                 dlgNode.id = id;
                 dlgNode.scene = CurrentScene;
-                dlgNode.Text = Map.ChrMap[chr] + "：" + dlgNode.txt;
+                string chrName;
+                if (!Map.ChrMap.TryGetValue(chr, out chrName)) chrName = chr.ToString();
+                dlgNode.Text = chrName + "：" + dlgNode.txt;
                 parentNode.Nodes.Add(dlgNode);
             }
             if (dlg_obj.ContainsKey("opt"))//带选项对话
@@ -301,14 +314,16 @@ namespace DialogSystem
         private JObject FindDialogue(string scene, int id)
         {
             JObject tar_obj = Manager.GetSceneObj(scene);
-            return (JObject)_FindDialogueById(tar_obj["dia"], id);
+            return (JObject)_FindDialogueById(tar_obj?["dia"], id);
         }
 
         private JToken _FindDialogueById(JToken dialogues, int id)
         {
+            if (dialogues == null) return null;
             foreach (var dialogue in dialogues)
             {
-                if (dialogue["id"].Value<int>() == id)
+                var idToken = dialogue["id"];
+                if (idToken != null && idToken.Type == JTokenType.Integer && idToken.Value<int>() == id)
                 {
                     return dialogue;
                 }
@@ -386,10 +401,12 @@ namespace DialogSystem
 
         private bool _DeleteDialogueById(JToken dialogues, int id)
         {
+            if (dialogues == null) return false;
             for (int i = 0; i < dialogues.Count(); i++)
             {
                 var dialogue = dialogues[i];
-                if (dialogue["id"].Value<int>() == id)
+                var idToken = dialogue["id"];
+                if (idToken != null && idToken.Type == JTokenType.Integer && idToken.Value<int>() == id)
                 {
                     dialogue.Remove();
                     return true;
@@ -534,6 +551,7 @@ namespace DialogSystem
         private void NewOrEditNext(string scene, int id, string direct = null)
         {
             var obj = FindDialogue(scene, id);
+            if (obj == null) return;
             if (direct == null)
                 obj["next"] = CurrentScene;
             else
@@ -544,10 +562,11 @@ namespace DialogSystem
         private void AddAct(string scene, int id, string fun, string args)
         {
             var obj = FindDialogue(scene, id);
+            if (obj == null) return;
             if (!obj.ContainsKey("act"))
                 obj["act"] = new JObject();
             JObject s = (JObject)obj["act"];
-            s.Add(new JProperty(fun, args));
+            s[fun] = args; // 如果已存在则覆盖，避免重复键
             History.Push((JArray)JsonSource.DeepClone());
         }
         private void EditAct(string scene, int id, string fun, string args)
@@ -615,8 +634,8 @@ namespace DialogSystem
             }
             else if (CurrentNode.next != null)
             {
-                JObject _j = (JObject)FindDialogue(CurrentScene, CurrentId)["next"];
-                _j.Remove();
+                var dlg = FindDialogue(CurrentScene, CurrentId) as JObject;
+                dlg?.Property("next")?.Remove();
 
                 History.Push((JArray)JsonSource.DeepClone());
                 CurrentNode.Remove();
@@ -634,7 +653,7 @@ namespace DialogSystem
         {
             if (CurrentNode.txt != null)//只在dlg下创建选项
             {
-                AddOption(CurrentScene, CurrentId, empty_default);
+                AddOption(CurrentScene, CurrentId, "新选项");
                 CurrentNode.NodeType = NodeType.DlgWithOpt;
                 RichNode richNode = new RichNode("🚩" + "新选项");
                 richNode.id = CurrentId;
@@ -720,7 +739,14 @@ namespace DialogSystem
                 chr_edit.Text = "0";
             }
             chr_edit.Text = chr_edit.Text.Replace("\n", "");
-            CurrentNode.chr = int.Parse(chr_edit.Text);
+            int newChr;
+            if (!int.TryParse(chr_edit.Text, out newChr))
+            {
+                Method.Error("角色ID必须为数字！！！");
+                chr_edit.Text = CurrentNode.chr.ToString();
+                return;
+            }
+            CurrentNode.chr = newChr;
             try
             {
                 CurrentNode.Text = Map.ChrMap[CurrentNode.chr] + "：" + CurrentNode.txt;
@@ -774,7 +800,8 @@ namespace DialogSystem
 
         private void new_dia_Click(object sender, EventArgs e)
         {
-            if (CurrentNode.NodeType == NodeType.ActItem && CurrentNode.NodeType == NodeType.Next)
+            // 修正条件判断，禁止在 ActItem 或 Next 节点下创建对话
+            if (CurrentNode.NodeType == NodeType.ActItem || CurrentNode.NodeType == NodeType.Next)
                 return;
             RichNode rn = new RichNode(empty_default);
             rn.chr = crt_chr;

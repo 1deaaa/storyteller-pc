@@ -14,7 +14,15 @@ namespace DialogSystem
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            UI=new MainUI();
+            try
+            {
+                UI=new MainUI();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("初始化主界面失败: " + ex.Message, "Error");
+                return;
+            }
             Application.Run(UI);
         }
     }
