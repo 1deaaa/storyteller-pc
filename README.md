@@ -1,8 +1,7 @@
 # Unity编剧与演出系统
 <img width="1876" height="978" alt="屏幕截图 2025-10-06 024148" src="https://github.com/user-attachments/assets/87c96136-d2ae-4886-8e0d-148aa2beabcb" />
 <img width="1259" height="796" alt="image" src="https://github.com/user-attachments/assets/1504686c-dede-4168-9ef0-190ffd8b8bff" />
-https://github.com/user-attachments/assets/8bfedc18-0659-4ca0-927d-6e2f276ce1bd
-
+[屏幕录制 2025-10-06 035746.webm](https://github.com/user-attachments/assets/40cd752a-39f9-4611-8880-399931cb38ca)
 
 这是编剧演出系统最早期的实现 **甚至没起名字** 功能很简单 **仅作原型验证使用**
  现在留着纪念那些纯手搓 AI还是弱智的日子
