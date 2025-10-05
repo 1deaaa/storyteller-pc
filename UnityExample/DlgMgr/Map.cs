@@ -28,9 +28,10 @@ public class Map
     public static Dictionary<int, string> ChrMap = new Dictionary<int, string>
     {
         #region 角色映射表
-        { 0, "引导" },
-        { 1, "说明" },
-        { 2, "注释" }
+        { 0, " " },
+        { 1, "我" },
+        { 2, "初音" },
+        { 3, "心声" }
         #endregion 角色映射表
     };
 }

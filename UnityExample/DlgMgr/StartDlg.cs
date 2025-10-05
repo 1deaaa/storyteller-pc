@@ -14,6 +14,9 @@ public class StartDlg : MonoBehaviour
 
     private bool playerInRange = false;
 
+    [Tooltip("对话文本文件")]
+    public TextAsset StoryFile;
+
     void Start()
     {
         if (view == null) view = Camera.main;
@@ -22,9 +25,14 @@ public class StartDlg : MonoBehaviour
 
     void Update()
     {
-        if (playerInRange && Input.GetKeyDown(KeyCode.G))
+        if (playerInRange && Input.GetKeyDown(KeyCode.F))
         {
-            Debug.Log("交互已触发！");
+            if (StoryFile == null)
+            {
+                Debug.LogError("StartDlg: StoryFile 未分配！");
+                return;
+            }
+            DlgMgr.StartDlg(StoryFile);
         }
     }
 

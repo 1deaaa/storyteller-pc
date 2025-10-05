@@ -14,7 +14,7 @@ namespace DialogSystem
 {    public class Manager
     {
         //脚本位置
-        public static string DataFilePath = @"..\..\..\对话.story";
+        public static string DataFilePath = @"..\..\..\对话.json";
         public static JArray JsonSource;
         public static Stack<JArray> History=new Stack<JArray>();
         public static JObject GetSceneObj(string scene)
@@ -126,9 +126,10 @@ namespace DialogSystem
         public static Dictionary<int, string> ChrMap = new Dictionary<int, string>
         {
             #region 角色映射表
-            { 0, "引导" },
-            { 1, "说明" },
-            { 2, "注释" }
+            { 0, " " },
+            { 1, "我" },
+            { 2, "初音" },
+            { 3, "心声" }
             #endregion 角色映射表
         };
     }

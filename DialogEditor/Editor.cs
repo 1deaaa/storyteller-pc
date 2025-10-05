@@ -1043,7 +1043,7 @@ namespace DialogSystem
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                openFileDialog.Filter = "故事数据 (*.story)|*.story";
+                openFileDialog.Filter = "故事数据 (*.json)|*.json";
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     DataFilePath = openFileDialog.FileName;
@@ -1067,7 +1067,7 @@ namespace DialogSystem
         {
             using (SaveFileDialog saveFileDialog = new SaveFileDialog())
             {
-                saveFileDialog.Filter = "故事数据 (*.story)|*.story";
+                saveFileDialog.Filter = "故事数据 (*.json)|*.json";
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     DataFilePath = saveFileDialog.FileName;
