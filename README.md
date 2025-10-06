@@ -1,15 +1,15 @@
 # Unity编剧与演出系统
+
+**将编剧的工作环境从复杂的unity编辑器解放出来 在友好的客户端写演出脚本、执行预制的效果（如切换BGM 播放动作等） 编剧程序端都可以随时迭代 而无需复杂ci/cd流程** 
+增加灵活程度 可以让编剧连unity都不装 且能随时编辑剧本
+
 <img width="1259" height="796" alt="image" src="https://github.com/user-attachments/assets/e7d0f5a3-697d-462d-a5b0-6aae0e3a0fe1" />
 <img width="1876" height="978" alt="屏幕截图 2025-10-06 024148" src="https://github.com/user-attachments/assets/87c96136-d2ae-4886-8e0d-148aa2beabcb" />
 <img width="1259" height="796" alt="image" src="https://github.com/user-attachments/assets/1504686c-dede-4168-9ef0-190ffd8b8bff" />
 
+这是编剧演出系统最早期的实现 甚至没起名字 功能很简单 **仅作原型验证使用**
 
-这是编剧演出系统最早期的实现 **甚至没起名字** 功能很简单 **仅作原型验证使用**
- 现在留着纪念那些纯手搓 AI还是弱智的日子
-
-项目初衷是尽可能的减少编剧与程序的隔阂 
-**让编剧可以直接在友好的树状图界面写剧本 并实现一些预制的效果 如 切换BGM 播放动作等** 
-增加灵活程度 可以让编剧连unity都不装 且能随时更改剧本
+立项的时候还没有编程助手一说 最近整理出来 就当是怀念纯手搓查文档的时代
 
 项目用于大部分Unity游戏的对话交互系统 理论上可以直接用这个手搓简单的gal 但如果只是做gal 其实现在早就有用浏览器实现gal效果的工具(WebGal)了 何必多折腾一步呢
 
@@ -91,14 +91,14 @@ cd dialog_system/GameTest
 一个最小对话节点示例：
 ```json
 {
-  "scene": "梦核入口",
+  "scene": "入口",
   "cap": "初次进入梦境",
   "pgrs": 0.3,
   "dia": [
     {
       "id": 10001,
       "chr": 0,
-      "txt": "欢迎来到梦核。",
+      "txt": "欢迎来到这里。",
       "opt": [
         {
           "optn": "继续前行",
